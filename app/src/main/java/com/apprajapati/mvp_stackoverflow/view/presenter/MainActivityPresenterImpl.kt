@@ -1,16 +1,16 @@
-package com.apprajapati.mvp_stackoverflow.presenter
+package com.apprajapati.mvp_stackoverflow.view.presenter
 
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepository
 import com.apprajapati.mvp_stackoverflow.view.MainActivityView
 
-class MainActivityPresenterImpl(val view: MainActivityView, val dataController: DataRepository)  : MainActivityPresenter{
+class MainActivityPresenterImpl(val view: MainActivityView, val dataController: DataRepository) :
+    MainActivityPresenter {
 
-    override suspend fun getQuestions(){
-
+    override suspend fun getQuestions() {
         val list = dataController.getQuestions()
-        if(list.isEmpty()){
+        if (list.isEmpty()) {
             view.displayNoQuestionsFound()
-        }else{
+        } else {
             view.displayQuestions(list)
         }
     }

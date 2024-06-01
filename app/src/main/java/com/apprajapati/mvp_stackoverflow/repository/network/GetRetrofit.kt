@@ -1,13 +1,15 @@
 package com.apprajapati.mvp_stackoverflow.repository.network
 
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object GetRetrofit {
 
+    val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
     //client..
-    private val client = OkHttpClient.Builder().build()
+    private val client = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
 
     //retrofit
     private val retrofit by lazy {

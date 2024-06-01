@@ -10,6 +10,7 @@ appcompat = "1.6.1"
 material = "1.12.0"
 retrofit = "2.11.0"
 retrofit-gson-converter ="2.11.0"
+retrofit-logging-interceptor = "4.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -21,6 +22,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref ="retrofit"}
 retrofitGsonConverter = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref ="retrofit-gson-converter"}
+retrofitLogging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref ="retrofit-logging-interceptor"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

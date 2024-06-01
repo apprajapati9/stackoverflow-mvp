@@ -14,7 +14,8 @@ data class QuestionDto(
     val score: Int,
     val tags: List<String>,
     val title: String,
-    val view_count: Int
+    val view_count: Int,
+    val body: String
 ) {
 
       fun toQuestion(): Question {
