@@ -10,6 +10,8 @@ import androidx.core.content.ContextCompat.getSystemService
 
 class InternetConnectionManager(context: Context) {
 
+    private val TAG = InternetConnectionManager::class.java.simpleName
+
     private lateinit var mNetworkListener: NetworkStatus
 
     fun setNetworkListener(listener: NetworkStatus) {
@@ -19,7 +21,11 @@ class InternetConnectionManager(context: Context) {
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         // network is available for use
         override fun onAvailable(network: Network) {
-            Log.d("ajay", "network available")
+            Log.d(TAG, "network available")
+            Log.d(
+                TAG,
+                "Thread name-> ${Thread.currentThread().name}"
+            )
             super.onAvailable(network)
             mNetworkListener.isNetworkAvailable(true)
         }
@@ -37,7 +43,7 @@ class InternetConnectionManager(context: Context) {
         // lost network connection
         override fun onLost(network: Network) {
             super.onLost(network)
-            Log.d("ajay", "network available")
+            Log.d(TAG, "network available")
             mNetworkListener.isNetworkAvailable(false)
         }
 

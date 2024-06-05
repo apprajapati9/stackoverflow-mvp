@@ -9,19 +9,35 @@ class DataRepositoryImpl : DataRepository {
 
         val allQuestions = mutableListOf<Question>()
 
-        try{
+        try {
             val questions = GetRetrofit.StackoverflowApi.getAndroidQuestions()
             Log.d("ajay-dataRepo", Thread.currentThread().name)
-
             if (questions.items.isNotEmpty()) {
 
                 questions.items.forEach {
                     allQuestions.add(it.toQuestion())
                 }
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace() //this triggers mainly when there's no internet connection.
         }
+
+
+//        CoroutineScope(Dispatchers.IO).launch {
+//            try {
+//                val questions = GetRetrofit.StackoverflowApi.getAndroidQuestions()
+//                Log.d("ajay-dataRepo", Thread.currentThread().name)
+//                if (questions.items.isNotEmpty()) {
+//
+//                    questions.items.forEach {
+//                        allQuestions.add(it.toQuestion())
+//                    }
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace() //this triggers mainly when there's no internet connection.
+//            }
+//        }.join()
+
         return allQuestions
 
     }

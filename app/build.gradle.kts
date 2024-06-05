@@ -27,11 +27,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_18
-        targetCompatibility = JavaVersion.VERSION_18
+        sourceCompatibility = JavaVersion.VERSION_20
+        targetCompatibility = JavaVersion.VERSION_20
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_18.toString()
+        jvmTarget = JavaVersion.VERSION_20.toString()
     }
 }
 
@@ -48,4 +48,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofitGsonConverter)
     implementation(libs.retrofitLogging)
+
+    debugImplementation(libs.leak.canary)
+
+    implementation(libs.ktx.coroutines)
 }

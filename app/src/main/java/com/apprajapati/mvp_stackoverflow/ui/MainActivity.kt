@@ -18,6 +18,9 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class MainActivity : BaseActivity(), MainActivityView {
+
+    private val TAG = MainActivity::class.java.simpleName
+
     lateinit var mPresenter: MainActivityPresenterImpl
     var controller: DataRepository = DataRepositoryImpl()
 
@@ -38,7 +41,7 @@ class MainActivity : BaseActivity(), MainActivityView {
         button.isEnabled = isNetworkAvailable
         button.setOnClickListener {
             lifecycleScope.launch {
-                Log.d("ajay mainOnclick", Thread.currentThread().name)
+                Log.d("$TAG mainOnclick", Thread.currentThread().name)
                 mPresenter.getQuestions()
             }
         }
@@ -68,7 +71,7 @@ class MainActivity : BaseActivity(), MainActivityView {
         // button.setText()
     }
 
-    fun showRecyclerView(show: Boolean) {
+    private fun showRecyclerView(show: Boolean) {
         if (show) {
             questionRecyclerView.visibility = View.VISIBLE
             button.visibility = View.GONE
@@ -87,11 +90,16 @@ class MainActivity : BaseActivity(), MainActivityView {
         super.isNetworkAvailable(isIt)
 
         /*
+            Interesting to note here that this method runs on ConnectivityThread, because listener is triggered in onActive and onLost method of connectivity manager inside the class.
+         */
+        Log.d(TAG, "Thread name-> ${Thread.currentThread().name}")
+        /*
         This status should be tracked from viewmodel or stateflow to observe and act
          but this is for demonstration purposes only that you can have base activity and listener to listen to network state changes.
          */
         if (!isIt) showSnackbar("Internet Off")
         runOnUiThread {
+            Log.d(TAG, "Thread name-> ${Thread.currentThread().name}")
             button.isEnabled = isNetworkAvailable
         }
     }
