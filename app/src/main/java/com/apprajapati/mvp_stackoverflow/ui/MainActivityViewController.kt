@@ -20,11 +20,8 @@ import kotlinx.coroutines.launch
 
 class MainActivityViewController(
     inflater: LayoutInflater, parent: ViewGroup?
-) : MainActivityView {
+) : MainActivityView, MainActivityViewContract {
 
-    interface Listeners {
-        fun onQuestionClicked(id: Int)
-    }
 
     private val view: View = inflater.inflate(R.layout.main_activity, parent, false)
     private lateinit var questionRecyclerView: RecyclerView
@@ -35,7 +32,7 @@ class MainActivityViewController(
 
 
     //Observable pattern listeners
-    private val listeners = arrayListOf<Listeners>()
+    private val listeners = arrayListOf<MainActivityViewContract.Listeners>()
 
     init {
         initViews()
@@ -63,13 +60,13 @@ class MainActivityViewController(
         return getRootView().context
     }
 
-    fun getRootView(): View = view
+    override fun getRootView(): View = view
 
-    fun registerListener(listener: Listeners) {
+    override fun registerListener(listener: MainActivityViewContract.Listeners) {
         listeners.add(listener)
     }
 
-    fun unRegisterListener(listener: Listeners) {
+    override fun unRegisterListener(listener: MainActivityViewContract.Listeners) {
         listeners.remove(listener)
     }
 

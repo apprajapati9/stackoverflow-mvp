@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 
-class MainActivity : BaseActivity(), MainActivityViewController.Listeners {
+class MainActivity : BaseActivity(), MainActivityViewContract.Listeners {
 
     private val TAG = MainActivity::class.java.simpleName
     private lateinit var mViewController: MainActivityViewController
