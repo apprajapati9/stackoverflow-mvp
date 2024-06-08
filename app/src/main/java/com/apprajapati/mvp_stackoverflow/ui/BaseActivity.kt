@@ -20,7 +20,7 @@ abstract class BaseActivity : AppCompatActivity(), NetworkStatus {
         setUpNetworkState()
     }
 
-    fun setUpNetworkState() {
+    private fun setUpNetworkState() {
         connection = InternetConnectionManager(this)
         connection.setNetworkListener(this)
     }

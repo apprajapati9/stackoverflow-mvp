@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.view
+package com.apprajapati.mvp_stackoverflow.view.presenter
 
 import com.apprajapati.mvp_stackoverflow.repository.network.models.Question
 
