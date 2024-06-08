@@ -1,7 +1,9 @@
-package com.apprajapati.mvp_stackoverflow.ui;
+package com.apprajapati.mvp_stackoverflow.ui
 
-import android.app.Activity
+import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,26 +18,35 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivityViewController(private val activity: Activity) :
-    MainActivityView {
+class MainActivityViewController(
+    inflater: LayoutInflater, parent: ViewGroup?
+) : MainActivityView {
 
-    private lateinit var view: View
+    interface Listeners {
+        fun onQuestionClicked(id: Int)
+    }
+
+    private val view: View = inflater.inflate(R.layout.main_activity, parent, false)
     private lateinit var questionRecyclerView: RecyclerView
     private lateinit var button: Button
 
     private lateinit var mainActivityPresenter: MainActivityPresenterImpl
     private var controller: DataRepository = DataRepositoryImpl()
 
-    fun initViews() {
 
-        activity.setContentView(R.layout.main_activity)
+    //Observable pattern listeners
+    private val listeners = arrayListOf<Listeners>()
 
-        view = activity.findViewById(R.id.rootView)
+    init {
+        initViews()
+    }
+
+    private fun initViews() {
 
         mainActivityPresenter = MainActivityPresenterImpl(this, controller)
 
-        questionRecyclerView = view.findViewById(R.id.recyclerview_questions)
-        button = view.findViewById(R.id.requestButton)
+        questionRecyclerView = findView(R.id.recyclerview_questions)
+        button = findView(R.id.requestButton)
 
         button.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
@@ -44,25 +55,49 @@ class MainActivityViewController(private val activity: Activity) :
         }
     }
 
+    private fun <T : View> findView(viewId: Int): T {
+        return getRootView().findViewById(viewId)
+    }
+
+    private fun getContext(): Context {
+        return getRootView().context
+    }
+
+    fun getRootView(): View = view
+
+    fun registerListener(listener: Listeners) {
+        listeners.add(listener)
+    }
+
+    fun unRegisterListener(listener: Listeners) {
+        listeners.remove(listener)
+    }
+
     override fun displayQuestions(list: List<Question>) {
         println("ajay Got questions here- > $list")
 
         showRecyclerView(true)
-        questionRecyclerView.layoutManager = LinearLayoutManager(activity)
+        questionRecyclerView.layoutManager = LinearLayoutManager(getContext())
         questionRecyclerView.adapter =
             StackQuestionsAdapter(list, object : StackQuestionsAdapter.onClickListener {
                 override fun OnQuestionClick(id: Int) {
-                    showSnackbar("Question clicked.. $id")
+                    showSnackBar("Question clicked.. $id")
+
+                    //Let activity handle such events like moving to another screen being a controller. This way passing adapt listener to activity so it can know what to do.
+                    listeners.forEach {
+                        it.onQuestionClicked(id)
+                    }
                 }
+
             })
     }
 
-    fun showSnackbar(message: String) {
+    private fun showSnackBar(message: String) {
         Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()
     }
 
     override fun displayNoQuestionsFound() {
-        showSnackbar("No questions found!")
+        showSnackBar("No questions found!")
         showRecyclerView(false)
     }
 
@@ -75,6 +110,4 @@ class MainActivityViewController(private val activity: Activity) :
             button.visibility = View.VISIBLE
         }
     }
-
-
 }
