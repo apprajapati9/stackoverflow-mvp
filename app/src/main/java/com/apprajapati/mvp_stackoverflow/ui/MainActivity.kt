@@ -3,8 +3,9 @@ package com.apprajapati.mvp_stackoverflow.ui
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import com.apprajapati.mvp_stackoverflow.view.presenter.MainActivityView
 
-class MainActivity : BaseActivity(), MainActivityViewContract.Listeners {
+class MainActivity : BaseActivity(), MainActivityView.Listeners {
 
     private val TAG = MainActivity::class.java.simpleName
     private lateinit var mViewController: MainActivityViewController
@@ -15,7 +16,6 @@ class MainActivity : BaseActivity(), MainActivityViewContract.Listeners {
         mViewController = MainActivityViewController(LayoutInflater.from(this), null)
         mViewController.registerListener(this)
         setContentView(mViewController.getRootView())
-
     }
 
 

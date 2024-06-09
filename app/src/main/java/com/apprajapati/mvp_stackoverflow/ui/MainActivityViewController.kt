@@ -1,6 +1,5 @@
 package com.apprajapati.mvp_stackoverflow.ui
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +7,7 @@ import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.apprajapati.mvp_stackoverflow.R
+import com.apprajapati.mvp_stackoverflow.base_view.BaseViewController
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepository
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepositoryImpl
 import com.apprajapati.mvp_stackoverflow.repository.network.models.Question
@@ -20,10 +20,8 @@ import kotlinx.coroutines.launch
 
 class MainActivityViewController(
     inflater: LayoutInflater, parent: ViewGroup?
-) : MainActivityView, MainActivityViewContract {
+) : BaseViewController(), MainActivityView {
 
-
-    private val view: View = inflater.inflate(R.layout.main_activity, parent, false)
     private lateinit var questionRecyclerView: RecyclerView
     private lateinit var button: Button
 
@@ -32,11 +30,13 @@ class MainActivityViewController(
 
 
     //Observable pattern listeners
-    private val listeners = arrayListOf<MainActivityViewContract.Listeners>()
+    private val listeners = arrayListOf<MainActivityView.Listeners>()
 
     init {
+        mRootView = inflater.inflate(R.layout.main_activity, parent, false)
         initViews()
     }
+
 
     private fun initViews() {
 
@@ -52,21 +52,11 @@ class MainActivityViewController(
         }
     }
 
-    private fun <T : View> findView(viewId: Int): T {
-        return getRootView().findViewById(viewId)
-    }
-
-    private fun getContext(): Context {
-        return getRootView().context
-    }
-
-    override fun getRootView(): View = view
-
-    override fun registerListener(listener: MainActivityViewContract.Listeners) {
+    override fun registerListener(listener: MainActivityView.Listeners) {
         listeners.add(listener)
     }
 
-    override fun unRegisterListener(listener: MainActivityViewContract.Listeners) {
+    override fun unRegisterListener(listener: MainActivityView.Listeners) {
         listeners.remove(listener)
     }
 
@@ -90,7 +80,7 @@ class MainActivityViewController(
     }
 
     private fun showSnackBar(message: String) {
-        Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(getRootView(), message, Snackbar.LENGTH_SHORT).show()
     }
 
     override fun displayNoQuestionsFound() {
