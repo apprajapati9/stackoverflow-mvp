@@ -7,7 +7,7 @@ import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.apprajapati.mvp_stackoverflow.R
-import com.apprajapati.mvp_stackoverflow.base_view.BaseViewController
+import com.apprajapati.mvp_stackoverflow.base_view.BaseObservableView
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepository
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepositoryImpl
 import com.apprajapati.mvp_stackoverflow.repository.network.models.Question
@@ -20,17 +20,13 @@ import kotlinx.coroutines.launch
 
 class MainActivityViewController(
     inflater: LayoutInflater, parent: ViewGroup?
-) : BaseViewController(), MainActivityView {
+) : BaseObservableView<MainActivityView.Listeners>(), MainActivityView {
 
     private lateinit var questionRecyclerView: RecyclerView
     private lateinit var button: Button
 
     private lateinit var mainActivityPresenter: MainActivityPresenterImpl
     private var controller: DataRepository = DataRepositoryImpl()
-
-
-    //Observable pattern listeners
-    private val listeners = arrayListOf<MainActivityView.Listeners>()
 
     init {
         mRootView = inflater.inflate(R.layout.main_activity, parent, false)
@@ -39,9 +35,7 @@ class MainActivityViewController(
 
 
     private fun initViews() {
-
         mainActivityPresenter = MainActivityPresenterImpl(this, controller)
-
         questionRecyclerView = findView(R.id.recyclerview_questions)
         button = findView(R.id.requestButton)
 
@@ -50,14 +44,6 @@ class MainActivityViewController(
                 mainActivityPresenter.getQuestions()
             }
         }
-    }
-
-    override fun registerListener(listener: MainActivityView.Listeners) {
-        listeners.add(listener)
-    }
-
-    override fun unRegisterListener(listener: MainActivityView.Listeners) {
-        listeners.remove(listener)
     }
 
     override fun displayQuestions(list: List<Question>) {
@@ -71,7 +57,7 @@ class MainActivityViewController(
                     showSnackBar("Question clicked.. $id")
 
                     //Let activity handle such events like moving to another screen being a controller. This way passing adapt listener to activity so it can know what to do.
-                    listeners.forEach {
+                    getListeners().forEach {
                         it.onQuestionClicked(id)
                     }
                 }
