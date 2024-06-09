@@ -34,6 +34,7 @@ class MainActivity : BaseActivity(), MainActivityView.Listeners {
         runOnUiThread {
             Log.d(TAG, "Thread name-> ${Thread.currentThread().name}")
             //button.isEnabled = isNetworkAvailable
+            mViewController.isInternetAvailable(isIt)
         }
     }
 

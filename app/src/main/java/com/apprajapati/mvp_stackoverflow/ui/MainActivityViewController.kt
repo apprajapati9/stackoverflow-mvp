@@ -39,6 +39,7 @@ class MainActivityViewController(
         questionRecyclerView = findView(R.id.recyclerview_questions)
         button = findView(R.id.requestButton)
 
+        button.isEnabled = false
         button.setOnClickListener {
             CoroutineScope(Dispatchers.Main).launch {
                 mainActivityPresenter.getQuestions()
@@ -82,5 +83,11 @@ class MainActivityViewController(
             questionRecyclerView.visibility = View.GONE
             button.visibility = View.VISIBLE
         }
+    }
+
+    fun isInternetAvailable(isIt: Boolean) {
+        button.isEnabled =
+            isIt //Initial status must be false because Connectivity manager doesn't trigger when connection is off during the launch of an activity.
+        if (!isIt) showSnackBar("Internet Off!")
     }
 }
