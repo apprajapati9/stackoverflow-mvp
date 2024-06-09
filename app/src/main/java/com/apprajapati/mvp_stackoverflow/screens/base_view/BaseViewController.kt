@@ -1,8 +1,7 @@
-package com.apprajapati.mvp_stackoverflow.base_view
+package com.apprajapati.mvp_stackoverflow.screens.base_view
 
 import android.content.Context
 import android.view.View
-import com.apprajapati.mvp_stackoverflow.ui.BaseViewContract
 
 abstract class BaseViewController : BaseViewContract {
 

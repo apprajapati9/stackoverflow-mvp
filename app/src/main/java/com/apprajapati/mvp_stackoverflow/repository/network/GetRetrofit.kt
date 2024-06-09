@@ -7,18 +7,22 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object GetRetrofit {
 
-    val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+    private val loggingInterceptor =
+        HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
+
     //client..
     private val client = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()
 
     //retrofit
     private val retrofit by lazy {
-        Retrofit.Builder().baseUrl("https://api.stackexchange.com/").client(client).addConverterFactory(
-            GsonConverterFactory.create()).build()
+        Retrofit.Builder().baseUrl("https://api.stackexchange.com/").client(client)
+            .addConverterFactory(
+                GsonConverterFactory.create()
+            ).build()
     }
 
     //api interface
-    val StackoverflowApi by lazy {
+    val stackoverflowApi by lazy {
         retrofit.create(StackoverflowApi::class.java)
     }
 

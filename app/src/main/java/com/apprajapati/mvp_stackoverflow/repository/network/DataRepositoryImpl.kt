@@ -10,7 +10,7 @@ class DataRepositoryImpl : DataRepository {
         val allQuestions = mutableListOf<Question>()
 
         try {
-            val questions = GetRetrofit.StackoverflowApi.getAndroidQuestions()
+            val questions = GetRetrofit.stackoverflowApi.getAndroidQuestions()
             Log.d("ajay-dataRepo", Thread.currentThread().name)
             if (questions.items.isNotEmpty()) {
 

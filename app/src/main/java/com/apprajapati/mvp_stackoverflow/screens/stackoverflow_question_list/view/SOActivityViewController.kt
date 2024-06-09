@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.ui
+package com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.view
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,25 +7,26 @@ import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.apprajapati.mvp_stackoverflow.R
-import com.apprajapati.mvp_stackoverflow.base_view.BaseObservableView
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepository
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepositoryImpl
 import com.apprajapati.mvp_stackoverflow.repository.network.models.Question
-import com.apprajapati.mvp_stackoverflow.view.presenter.MainActivityPresenterImpl
-import com.apprajapati.mvp_stackoverflow.view.presenter.MainActivityView
+import com.apprajapati.mvp_stackoverflow.screens.base_view.BaseObservableViewController
+import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.StackQuestionsAdapter
+import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.presenter.SOActivityPresenterImpl
+import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.presenter.SOActivityView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivityViewController(
+class SOActivityViewController(
     inflater: LayoutInflater, parent: ViewGroup?
-) : BaseObservableView<MainActivityView.Listeners>(), MainActivityView {
+) : BaseObservableViewController<SOActivityView.Listeners>(), SOActivityView {
 
     private lateinit var questionRecyclerView: RecyclerView
     private lateinit var button: Button
 
-    private lateinit var mainActivityPresenter: MainActivityPresenterImpl
+    private lateinit var mainActivityPresenter: SOActivityPresenterImpl
     private var controller: DataRepository = DataRepositoryImpl()
 
     init {
@@ -35,7 +36,7 @@ class MainActivityViewController(
 
 
     private fun initViews() {
-        mainActivityPresenter = MainActivityPresenterImpl(this, controller)
+        mainActivityPresenter = SOActivityPresenterImpl(this, controller)
         questionRecyclerView = findView(R.id.recyclerview_questions)
         button = findView(R.id.requestButton)
 

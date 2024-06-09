@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.ui
+package com.apprajapati.mvp_stackoverflow.screens.base_view
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

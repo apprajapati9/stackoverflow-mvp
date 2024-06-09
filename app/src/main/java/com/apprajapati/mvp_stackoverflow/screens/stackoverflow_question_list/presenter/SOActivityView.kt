@@ -1,8 +1,8 @@
-package com.apprajapati.mvp_stackoverflow.view.presenter
+package com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.presenter
 
 import com.apprajapati.mvp_stackoverflow.repository.network.models.Question
 
-interface MainActivityView {
+interface SOActivityView {
 
     interface Listeners {
         fun onQuestionClicked(id: Int)

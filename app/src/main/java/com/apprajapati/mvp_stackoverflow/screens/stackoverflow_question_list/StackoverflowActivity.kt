@@ -1,19 +1,21 @@
-package com.apprajapati.mvp_stackoverflow.ui
+package com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list
 
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import com.apprajapati.mvp_stackoverflow.view.presenter.MainActivityView
+import com.apprajapati.mvp_stackoverflow.screens.base_view.BaseActivity
+import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.presenter.SOActivityView
+import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.view.SOActivityViewController
 
-class MainActivity : BaseActivity(), MainActivityView.Listeners {
+class SOActivity : BaseActivity(), SOActivityView.Listeners {
 
-    private val TAG = MainActivity::class.java.simpleName
-    private lateinit var mViewController: MainActivityViewController
+    private val TAG = SOActivity::class.java.simpleName
+    private lateinit var mViewController: SOActivityViewController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mViewController = MainActivityViewController(LayoutInflater.from(this), null)
+        mViewController = SOActivityViewController(LayoutInflater.from(this), null)
         mViewController.registerListener(this)
         setContentView(mViewController.getRootView())
     }
