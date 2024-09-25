@@ -34,12 +34,15 @@ class NetworkDataSource : DataSource {
     override fun printFactoryName(): String = "Network Factory"
 }
 
+//This provides an additional layer of abstraction on top of concrete class of interface DataSource
 abstract class DataSourceFactory {
 
     //concrete implementation needed for this method.
     abstract fun createDataSource() : DataSource
 
     companion object{
+        //Reified - allows you to access the actual type of T param is resolved at runtime.
+        //This is useful when you need to perform type checks, create instances, or use reflection based on the generic type parameter.
         inline fun  <reified T: DataSource> createFactory() : DataSourceFactory =
             when(T::class){
                 DatabaseDataSource::class -> {
@@ -98,6 +101,11 @@ class AbstractionFactoryTest {
              NetworkFactory
              DBFactory
         So both classes will have to provide concrete implementation of createDataSource functionality and return a datasource.
+
+        A way to think about is that
+            We don't know how database and network source are implemented
+            Factories will enable us to get an object of our preferred data source
+
  */
 
 
