@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.kotlin_playground
+package com.apprajapati.mvp_stackoverflow.kotlin_playground.kotlin_langauge
 
 data class V(var x: Float, var y: Float) {
     fun scale(scale: Float) {

@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.kotlin_playground
+package com.apprajapati.mvp_stackoverflow.kotlin_playground.kotlin_langauge
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
