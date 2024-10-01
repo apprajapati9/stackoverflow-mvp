@@ -1,8 +1,7 @@
-package com.apprajapati.mvp_stackoverflow.design_patterns
+package com.apprajapati.mvp_stackoverflow.design_patterns.observer
 
 import org.junit.jupiter.api.Test
 import java.io.File
-import kotlin.math.log
 
 /* Observer pattern - Widely used in Android.
 - Defines a subscription mechanism
