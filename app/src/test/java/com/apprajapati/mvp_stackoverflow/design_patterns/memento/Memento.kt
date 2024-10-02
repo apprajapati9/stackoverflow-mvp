@@ -87,7 +87,7 @@ class MementoTest{
         originator.state = STATE.REDO
         careTaker.saveState(originator.createMemento())
         println("current states: ${careTaker.allStates()}")
-        
+
         originator.restoreMemento(careTaker.reset())
         println("current restored state: ${originator.state}")
 
