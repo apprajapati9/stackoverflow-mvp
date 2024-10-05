@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.ui
+package com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,15 +8,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.apprajapati.mvp_stackoverflow.R
 import com.apprajapati.mvp_stackoverflow.repository.network.models.Question
 
-class StackQuestionsAdapter(val questions: List<Question>,val clickListener: onClickListener): RecyclerView.Adapter<StackQuestionsAdapter.StackQuestionsHolder>() {
+class StackQuestionsAdapter(
+    private val questions: List<Question>,
+    private val clickListener: onClickListener
+) :
+    RecyclerView.Adapter<StackQuestionsAdapter.StackQuestionsHolder>() {
 
-    class StackQuestionsHolder(view: View) : RecyclerView.ViewHolder(view){
+    class StackQuestionsHolder(view: View) : RecyclerView.ViewHolder(view) {
         var questionId = view.findViewById<TextView>(R.id.questionId)
         var question = view.findViewById<TextView>(R.id.question)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StackQuestionsHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_questions_view, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.item_questions_view, parent, false)
         return StackQuestionsHolder(view)
     }
 
@@ -37,7 +42,7 @@ class StackQuestionsAdapter(val questions: List<Question>,val clickListener: onC
         }
     }
 
-    interface onClickListener{
+    interface onClickListener {
         fun OnQuestionClick(id: Int)
     }
 }

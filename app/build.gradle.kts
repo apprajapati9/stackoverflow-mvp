@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.junit5.plugin)
 }
 
 android {
@@ -14,7 +15,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -40,9 +40,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 
     //Retrofit..
     implementation(libs.retrofit)
@@ -52,4 +49,10 @@ dependencies {
     debugImplementation(libs.leak.canary)
 
     implementation(libs.ktx.coroutines)
+
+//    //Test related.
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.square.assertj)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+
 }

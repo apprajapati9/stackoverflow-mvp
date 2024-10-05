@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.ui
+package com.apprajapati.mvp_stackoverflow.screens.base_view
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -20,7 +20,7 @@ abstract class BaseActivity : AppCompatActivity(), NetworkStatus {
         setUpNetworkState()
     }
 
-    fun setUpNetworkState() {
+    private fun setUpNetworkState() {
         connection = InternetConnectionManager(this)
         connection.setNetworkListener(this)
     }

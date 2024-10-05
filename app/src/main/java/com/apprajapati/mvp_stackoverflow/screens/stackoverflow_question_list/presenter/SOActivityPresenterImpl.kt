@@ -1,10 +1,12 @@
-package com.apprajapati.mvp_stackoverflow.view.presenter
+package com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.presenter
 
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepository
-import com.apprajapati.mvp_stackoverflow.view.MainActivityView
 
-class MainActivityPresenterImpl(val view: MainActivityView, val dataController: DataRepository) :
-    MainActivityPresenter {
+class SOActivityPresenterImpl(
+    private val view: SOActivityView,
+    private val dataController: DataRepository
+) :
+    SOActivityPresenter {
 
     override suspend fun getQuestions() {
         val list = dataController.getQuestions()

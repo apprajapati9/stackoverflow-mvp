@@ -21,7 +21,7 @@ class InternetConnectionManager(context: Context) {
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         // network is available for use
         override fun onAvailable(network: Network) {
-            Log.d(TAG, "network available")
+            Log.d(TAG, "Network available")
             Log.d(
                 TAG,
                 "Thread name-> ${Thread.currentThread().name}"
@@ -43,20 +43,20 @@ class InternetConnectionManager(context: Context) {
         // lost network connection
         override fun onLost(network: Network) {
             super.onLost(network)
-            Log.d(TAG, "network available")
+            Log.d(TAG, "Network lost!")
             mNetworkListener.isNetworkAvailable(false)
         }
 
 
     }
 
-    val networkRequest = NetworkRequest.Builder()
+    private val networkRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
         .build()
 
-    val connectivityManager =
+    private val connectivityManager =
         getSystemService(context, ConnectivityManager::class.java) as ConnectivityManager
 
     init {
