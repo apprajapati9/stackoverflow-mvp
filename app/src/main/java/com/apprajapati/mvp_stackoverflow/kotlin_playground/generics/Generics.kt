@@ -15,7 +15,7 @@ class Generics {
     fun <T: Number> square(num: T) : Double {
         return num.toDouble() * num.toDouble()
     }
-    
+
     fun <T: Comparable<T>> countGreater(items: Array<T>, item: T) : Int {
         var counter = 0
 
