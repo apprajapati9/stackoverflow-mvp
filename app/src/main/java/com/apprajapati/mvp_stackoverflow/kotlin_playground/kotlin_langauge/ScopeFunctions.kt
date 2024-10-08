@@ -1,6 +1,5 @@
 package com.apprajapati.mvp_stackoverflow.kotlin_playground.kotlin_langauge
 
-import com.apprajapati.mvp_stackoverflow.kotlin_playground.generics.add
 import kotlin.random.Random
 
 /*

@@ -6,7 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-fun launchonIO(block: suspend () -> Unit) {
+fun launchOnIO(block: suspend () -> Unit) {
     try {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
@@ -19,7 +19,7 @@ fun launchonIO(block: suspend () -> Unit) {
 
 fun main() = runBlocking {
     println("ajay1st - thread name = ${Thread.currentThread()}")
-    launchonIO {
+    launchOnIO {
         delay(5000)
         println("thread name = ${Thread.currentThread()}")
         println("ajay")

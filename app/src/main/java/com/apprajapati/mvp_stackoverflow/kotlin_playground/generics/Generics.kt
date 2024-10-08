@@ -9,7 +9,7 @@ class Generics {
     //bounded type params - restricts passing values other than ones that extends Number
     fun <T: Number> numberSquare(num: T) {
         val square = num.toDouble() * num.toDouble()
-        println("num + num is ${square}")
+        println("num + num is $square")
     }
 
     fun <T: Number> square(num: T) : Double {
