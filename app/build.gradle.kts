@@ -55,4 +55,13 @@ dependencies {
     testImplementation(libs.square.assertj)
     testRuntimeOnly(libs.junit.jupiter.engine)
 
+    //lifecycle
+    implementation(libs.lifecycle.runtime.ktx)
+
+    //Testing flow
+    testImplementation(libs.app.cash.turbine) //library that makes testing flows extremely easy
+    testImplementation(libs.com.google.truth) //better assertions than junit.
+    testImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
+    // comes with testing functionality that we need to test.
+
 }
