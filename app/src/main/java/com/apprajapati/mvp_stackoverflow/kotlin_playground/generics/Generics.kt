@@ -1,5 +1,10 @@
 package com.apprajapati.mvp_stackoverflow.kotlin_playground.generics
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 class Generics {
     // <T> mentions that this is going to be a generic type
     fun <T> showValue(value : T) {
@@ -65,10 +70,17 @@ fun <T : Comparable<T>> calculateMin(num1: T, num2: T) : T {
     return num2
 }
 
+//Lambda function that will execute with delay.
+suspend fun <T> calculate(repeat: Int, function: () -> T) : T{
+    repeat(repeat){
+        delay(1000)
+        function()
+    }
+    return function()
+}
 
 
-
-fun main(){
+suspend fun main() {
     val generics = Generics()
 
     generics.showValue("ajay")
@@ -98,5 +110,12 @@ fun main(){
     println(generics.countGreater(array, 10))
     // ---- End..
 
-
+    var counter = 0
+    CoroutineScope(Dispatchers.Default).launch {
+        calculate(5)
+        {
+            counter++
+            println("ajay repeat $counter")
+        }
+    }.join() //Join so main thread doesn't stop and waits for this coroutine to finish.
 }

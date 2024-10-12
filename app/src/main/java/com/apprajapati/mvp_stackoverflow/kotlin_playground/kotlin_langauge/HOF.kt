@@ -1,5 +1,7 @@
 package com.apprajapati.mvp_stackoverflow.kotlin_playground.kotlin_langauge
 
+import kotlin.random.Random
+
 
 //get first of the condition that met within lambda predicate(T)
 // here predicate (T) if for example Int then expects an expression that produces value of type T (Int) in this case.
@@ -43,5 +45,9 @@ fun main(){
     val name = "rwxxax"
     println(name.firstVowel())
 
-
+    val numbers = arrayListOf<Int>()
+    for(i in 1..20){
+        numbers.add(Random.nextInt(1,100))
+    }
+    println(numbers)
 }

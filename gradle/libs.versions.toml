@@ -1,5 +1,5 @@
 [versions]
-agp = "8.6.1"
+agp = "8.5.0"
 kotlin = "1.9.23"
 coreKtx = "1.13.1"
 appcompat = "1.7.0"
@@ -9,11 +9,11 @@ retrofit-gson-converter = "2.11.0"
 retrofit-logging-interceptor = "4.12.0"
 leakCanary = "2.14"
 
-ktx-coroutines = "1.8.0"
+ktx-coroutines = "1.9.0"
 
 #Jnit jupiter tests for design patterns
 assertJ = "3.26.3"
-junit-j = "5.11.0"
+junit-j = "5.11.2"
 junit5-plugin = "1.11.0.0"
 
 [libraries]
