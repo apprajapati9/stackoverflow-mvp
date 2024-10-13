@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.design_patterns.factory_method
+package com.apprajapati.mvp_stackoverflow.design_patterns.creational_patterns.factory_method
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
@@ -60,7 +60,7 @@ abstract class DataSourceFactory {
 
 //Concrete class of abstract factory i.e specific factory -> Network Factory
 class NetworkFactory : DataSourceFactory(){
-    override fun createDataSource(): DataSource  = NetworkDataSource()
+    override fun createDataSource(): DataSource = NetworkDataSource()
 }
 
 //Concrete class of abstract factory i.e specific factory -> Database Factory

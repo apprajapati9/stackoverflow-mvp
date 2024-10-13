@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.design_patterns.singleton
+package com.apprajapati.mvp_stackoverflow.design_patterns.creational_patterns.singleton
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test

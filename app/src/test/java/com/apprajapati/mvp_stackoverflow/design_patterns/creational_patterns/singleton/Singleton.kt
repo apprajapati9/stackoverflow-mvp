@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.design_patterns.singleton
+package com.apprajapati.mvp_stackoverflow.design_patterns.creational_patterns.singleton
 
 /*
 Singleton pattern is used when you need to have a single point of access to resources

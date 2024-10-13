@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.design_patterns.factory_method
+package com.apprajapati.mvp_stackoverflow.design_patterns.creational_patterns.factory_method
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test

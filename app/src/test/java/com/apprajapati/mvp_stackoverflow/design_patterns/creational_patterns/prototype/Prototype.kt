@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.design_patterns.prototype
+package com.apprajapati.mvp_stackoverflow.design_patterns.creational_patterns.prototype
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test

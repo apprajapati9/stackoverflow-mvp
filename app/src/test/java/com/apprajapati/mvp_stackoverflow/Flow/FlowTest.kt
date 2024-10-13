@@ -42,7 +42,7 @@ class FlowTest {
     @Test
     fun `countDownFlow, properly counts down from 10 to 0`() = runTest{
         withContext(Dispatchers.Default) {
-            sut?.countDownFlow()?.test {
+            sut?.countDownFlow()?.test { //turbine dependency makes this possible.
                 for(i in 10 downTo 1){
                     val emission = awaitItem()
                     Assertions.assertThat(emission).isEqualTo(i)

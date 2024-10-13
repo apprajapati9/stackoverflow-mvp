@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.design_patterns.lazy_init
+package com.apprajapati.mvp_stackoverflow.design_patterns.creational_patterns.lazy_init
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
