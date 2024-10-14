@@ -1,5 +1,6 @@
 package com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.view
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,12 @@ import com.apprajapati.mvp_stackoverflow.repository.network.DataRepository
 import com.apprajapati.mvp_stackoverflow.repository.network.DataRepositoryImpl
 import com.apprajapati.mvp_stackoverflow.repository.network.models.Question
 import com.apprajapati.mvp_stackoverflow.screens.base_view.BaseObservableViewController
+import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.ButtonDemoNoXMLActivity
+import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.FlyingArrowActivity
+import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.FlyingArrowView
+import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.GesturesDemoActivity
+import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.RandomExplosionsActivity
+import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.moving_ball.MovingBallActivity
 import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.StackQuestionsAdapter
 import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.presenter.SOActivityPresenterImpl
 import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.presenter.SOActivityView
@@ -42,6 +49,8 @@ class SOActivityViewController(
 
         button.isEnabled = false
         button.setOnClickListener {
+//              val intent = Intent(getRootView().context, RandomExplosionsActivity::class.java)
+//              getRootView().context.startActivity(intent)
             CoroutineScope(Dispatchers.Main).launch {
                 mainActivityPresenter.getQuestions()
             }

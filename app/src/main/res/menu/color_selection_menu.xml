@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/red_color_item"
+        android:title="red"/>
+    <item android:id="@+id/white_color_item"
+        android:title="white"/>
+    <item android:id="@+id/yellow_color_item"
+        android:title="yellow"/>
+    <item android:id="@+id/green_color_item"
+        android:title="green"/>
+    <item android:id="@+id/blue_color_item"
+        android:title="blue"/>
+    <item android:id="@+id/magenta_color_item"
+        android:title="magenta"/>
+    <item android:id="@+id/cyan_color_item"
+        android:title="cyan"/>
+    <item android:id="@+id/gray_color_item"
+        android:title="gray"/>
+    <item android:id="@+id/light_gray_color_item"
+        android:title="light_gray"/>
+</menu>

@@ -28,6 +28,12 @@
 
         </activity>
 
+        <activity android:name=".screens.showcase_activities.ButtonDemoNoXMLActivity" android:exported="true" />
+        <activity android:name=".screens.showcase_activities.FlyingArrowActivity" android:exported="true" />
+        <activity android:name=".screens.showcase_activities.GesturesDemoActivity" android:exported="true" />
+        <activity android:name=".screens.showcase_activities.moving_ball.MovingBallActivity" android:exported="true" />
+        <activity android:name=".screens.showcase_activities.RandomExplosionsActivity" android:exported="true" />
+
 
     </application>
 
