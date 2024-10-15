@@ -16,6 +16,8 @@ import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.ButtonDemoN
 import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.FlyingArrowActivity
 import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.FlyingArrowView
 import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.GesturesDemoActivity
+import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.MovingBallsWithPointerActivity
+import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.MovingBallsWithPointerView
 import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.RandomExplosionsActivity
 import com.apprajapati.mvp_stackoverflow.screens.showcase_activities.moving_ball.MovingBallActivity
 import com.apprajapati.mvp_stackoverflow.screens.stackoverflow_question_list.StackQuestionsAdapter
@@ -49,7 +51,7 @@ class SOActivityViewController(
 
         button.isEnabled = false
         button.setOnClickListener {
-//              val intent = Intent(getRootView().context, RandomExplosionsActivity::class.java)
+//              val intent = Intent(getRootView().context, MovingBallsWithPointerActivity::class.java)
 //              getRootView().context.startActivity(intent)
             CoroutineScope(Dispatchers.Main).launch {
                 mainActivityPresenter.getQuestions()
