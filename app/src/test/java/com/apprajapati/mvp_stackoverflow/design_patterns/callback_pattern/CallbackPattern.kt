@@ -27,7 +27,7 @@ class Download(private val callback: List<Callback>) {
     }
 }
 
-class Caller(val name : String) : Callback {
+class Caller(private val name : String) : Callback {
     override fun success(msg: String) {
         println("$name: download completed -> $msg")
 
