@@ -364,3 +364,13 @@ Java.
 In Kotlin, if a matching case is found, only the code in the respective case block is executed,
 and execution continues with the next statement after when block.
 For more [read this link](https://www.baeldung.com/kotlin/when)
+
+### Q38. Solid principles
+
+1. Single responsibility to change for a class
+2. Open closed principle
+3. Liskov substitution principle
+4. Interface segregation
+5. Dependency inversion
+
+### Q39. 

@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.kotlin_playground.kotlin_langauge
+package com.apprajapati.mvp_stackoverflow.kotlin_playground.kotlin_langauge.delegation
 
 import kotlin.properties.Delegates
 import kotlin.reflect.KProperty
@@ -26,16 +26,28 @@ class User {
 }
 
 //Storing properties in a map.
-class User2(val map: Map<String, Any?>) {
-    val name: String by map
-    val age: Int by map
+class User2(attrs: Map<String, Any?>) {
+    val name: String by attrs //Delegated name property to the 'attrs' using map
+    val age: Int by attrs
+}
+
+class Resource {
+
+    //Lazy is a delegation lambda function
+    private val resource: String by lazy {
+        println("Init resource")
+        "init"
+    }
+
+    fun useResource() = "Using resource $resource"
 }
 
 fun main() {
     val e = Example()
     println(e.p)
     e.p = "ajay"
-
+    
+    //This is to demonstrate observable delegation
     val user = User()
     user.name = "first"
     user.name = "second"
@@ -49,6 +61,13 @@ fun main() {
 
     println(user2.name) // Prints "John Doe"
     println(user2.age)  // Prints 25
+
+
+    //To showcase lazy delegation
+    val rUser = Resource()
+
+    println(rUser.useResource())
+    println(rUser.useResource())
 }
 
 

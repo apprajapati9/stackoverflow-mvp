@@ -4,7 +4,7 @@ package com.apprajapati.mvp_stackoverflow.kotlin_playground
 
 ## Android lifecycle
 
-#### Q.1 Describe the activity lifecycle
+### Q.1 Describe the activity lifecycle
 
 The android activity lifecycle describes the different states an activity goes through
 during its lifetime, from creation to destruction.
@@ -31,7 +31,7 @@ during its lifetime, from creation to destruction.
 
     ondestroy - This is called before the activity is fully destroyed and removed from memory. 
 
-#### Q2. How saving and restoring state works in Android?
+### Q2. How saving and restoring state works in Android?
 
 1. `Viewmodel` objects
 2. Saved instance states within the following contexts:
@@ -121,7 +121,7 @@ For
 more [rememberSaveable for compose](https://developer.android.com/develop/ui/compose/state#restore-ui-state)
 For more [Watch this video](https://youtube.com/watch?v=mymWGMy9pYI)
 
-#### Q3. What is an intent?
+### Q3. What is an intent?
 
 An intent in Android is an abstract description of an operation to be performed. Intents are
 typically used to start an activity, send a broadcast, or initiate a service. Intents can also pass
@@ -140,7 +140,7 @@ implIntent.setData(Uri.parse("https://www.apprajapati.com"))
 startActivity(implIntent)
 ```
 
-#### Q4. Serialization and Parcelable
+### Q4. Serialization and Parcelable
 
 Both are mechanisms used to pass data between different components (such as activities or
 fragments).
@@ -154,7 +154,7 @@ Parcelable is the recommended approach for Android applications due to its bette
 most uses cases. However, if performance is not a concern, then Serializable might be easier to
 implement.
 
-#### Q5. What is data class in Kotlin?
+### Q5. What is data class in Kotlin?
 
 A type of class specifically designed to hold and work with holding data. It is a class itself but
 internally Kotlin provides default implementation of object methods.
@@ -162,7 +162,7 @@ internally Kotlin provides default implementation of object methods.
 1. equals() - compares two instances of the class for equality based on their `properties`.
 2. hashCode() - Generates a hash code based on the properties.
 
-#### Q6. What's the extension function in Kotlin?
+### Q6. What's the extension function in Kotlin?
 
 Is a way to add new functionality to existing classes without modifying their code directly.
 
@@ -175,7 +175,7 @@ val number = 12
 number.isEven() 
 ```
 
-#### Q7. Four components of Android
+### Q7. Four components of Android
 
 - Activities
     - Represents a single screen in an app. It is an entry point for interacting with the user and
@@ -204,23 +204,26 @@ number.isEven()
     - Apps can access data in another app through a specific URI(Uniform Resource Identifier) to
       fetch or modify the data.
 
-#### Q8. Difference between Coroutines and Thread?
+### Q8. Difference between Coroutines and Thread?
 
 Coroutine is the idea of suspendable computations i.e the idea that a function can suspend its
-execution at some point and resume later on.
+execution at some point and resume later on. A coroutine is an instance of a suspendable
+computation.
 
 - One of the benefits is writing non blocking code is essentially the same as writing blocking code.
 - A coroutine is a lightweight thread like entity, but doesn't tie up a real thread. When launched,
   it doesn't start executing immediately on the main thread (unless specified), and it doesn't block
   the thread it runs on. Instead, the work inside the coroutine is split into smaller units of work
   that can be suspended and resumed at appropriate points.
-- Thread is a process or execution flow that has its own memory and resources and switching between
+- Thread is a unit of execution within a process or execution flow that has its own memory and
+  resources and switching between
   threads involves more overhead, leading to higher resource consumption when dealing with many
   threads
 
 Read more [Async programming in Kotlin ](https://kotlinlang.org/docs/async-programming.html)
+Read more [Coroutines documentation](https://kotlinlang.org/docs/coroutines-guide.html)
 
-#### Q8.What’s State Hoisting?
+### Q8.What’s State Hoisting?
 
 State hoisting in Jetpack Compose refers to a design pattern where you “hoist” the state up to the
 caller or parent composable, allowing the parent to control the state while the child composable
@@ -244,7 +247,7 @@ It offers following benefits:
 5. Unidirectional data flow
 6. Better control over lifecycle
 
-#### Q9. What are side effects in Compose?
+### Q9. What are side effects in Compose?
 
 A side effect refers to any operation that affects state outside the scope of the composable
 function or persists beyond its recomposition. Since composable functions are designed to be pure
@@ -286,10 +289,52 @@ one-time events or interacting with external resources.
     @Composable
     fun composableListener(listener: SomeListener) {
         DisposableEffect(listener) {
-        listener.register()  // Called when entering the composition
+            listener.register()  // Called when entering the composition
             onDispose {
                 listener.unregister()  // Called when leaving the composition
             } 
         }
     }   
    ```
+
+### Q10. Coroutines suspend - how it works?
+
+Good resource on Kotlin - [Kotlin](https://kt.academy/article)
+
+### Q11. Diff between MVI and MVVM?
+
+The key difference between two architectures is that in MVVM, the ViewModel is responsible for both
+user actions and updating the state of the View. In MVI, the intent is a separate layer that
+represents user actions, making it easier to reason about app behavior and handle edge cases.
+
+By adapting VMI, you can create a more reactive, predictable and testable app while reducing
+coupling between layers and improving overall maintainability of your codebase.MVI allows you to
+model user interactions as intents.
+
+#### Q12. ViewModel with dependencies, how to?
+
+If `ViewModel` takes `SavedStateHandle` type as a dependency, then ViewModel provider factory
+isn't needed. For other dependencies, you must provide factory as follows:
+
+```kotlin
+     //How to use below method to init viewmodel.
+val model: CoinsListViewModel = ViewModelProvider(
+    this,
+    ViewModelFactory(GetCoinsUseCase())
+)[CoinsListViewModel::class.java]
+
+//For a ViewModel with a use case dependency.
+class ViewModelFactory(private val useCase: GetCoinsUseCase) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(CoinsListViewModel::class.java)) {
+            return CoinsListViewModel(useCase) as T
+        }
+        throw IllegalArgumentException("Unknown viewmodel class")
+    }
+}
+```
+
+For more
+info [ViewModel with dependency](https://developer.android.com/topic/libraries/architecture/viewmodel/viewmodel-factories)
+
+#### Q13. 
