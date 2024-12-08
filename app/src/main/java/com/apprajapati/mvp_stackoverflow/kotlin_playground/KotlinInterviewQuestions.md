@@ -373,4 +373,13 @@ For more [read this link](https://www.baeldung.com/kotlin/when)
 4. Interface segregation
 5. Dependency inversion
 
-### Q39. 
+### Q39. Reified keyword
+
+Reify means make (something abstract) more concrete or real. Just as the meaning, it is used to tell
+the compiler that at run time instead of type erasure and using Object, use the concrete class
+passed.
+
+Reified can only be used using inline function.
+Look at ReifiedExample.kt
+
+### Q40. 

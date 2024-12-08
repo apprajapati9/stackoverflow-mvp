@@ -311,7 +311,7 @@ By adapting VMI, you can create a more reactive, predictable and testable app wh
 coupling between layers and improving overall maintainability of your codebase.MVI allows you to
 model user interactions as intents.
 
-#### Q12. ViewModel with dependencies, how to?
+### Q12. ViewModel with dependencies, how to?
 
 If `ViewModel` takes `SavedStateHandle` type as a dependency, then ViewModel provider factory
 isn't needed. For other dependencies, you must provide factory as follows:
@@ -337,4 +337,166 @@ class ViewModelFactory(private val useCase: GetCoinsUseCase) : ViewModelProvider
 For more
 info [ViewModel with dependency](https://developer.android.com/topic/libraries/architecture/viewmodel/viewmodel-factories)
 
-#### Q13. 
+### Q13. Animation in Android - good watch
+
+Watch [Get Animated- Android Dev Summit '18](https://www.youtube.com/watch?v=N_x7SV3I3P0)
+
+### Q14. Launch modes in Android
+
+`launchMode` is used to give instructions to the Android OS about how to launch an activity.
+
+SingleTask :
+
+- If activity doesn't exist in an already created task, then it starts the new activity in a new
+  task with the Activity's new instance at the root of that Task
+- If an activity exits in an already created Task, the Task is brought forward with the activity's
+  last state restored and this Activity receives the new intent through the onNewIntent() method
+- Example A,B,C,D,E activities, A -> B (Navigate from A to B). B -> C, C -> D, D -> E. When we
+  launch activity C, the state of the stack will be A->B->C. Here activity C is the old instance
+  only that gets the extras data through onNewIntent(). And Activities D and E get destroyed.
+
+### Q15. What is Suspend vs Blocking functions?
+
+Suspend functions are the ones that do not block the thread and let it continue the execution.
+Blocking functions using runBlocking{} will not move forward until execution with delay or long
+running task is done.
+
+Regular functions are blocking functions.
+For suspend functions use suspend keyword, mainly for IO bound tasks i.e. network, file reading,
+delay and other async tasks.
+
+Check SuspendVsBlocking.kt
+
+### Q16. Internal visibility modifier in Kotlin
+
+It is used to restrict the visibility of a class, function, property or object to the module in
+which it is defined. A module in Kotlin is typically defined as a project or a set or related
+project that are compiled together. In other words, the internal visibility modifier makes a member
+accessible on within the same module.
+
+Purpose:
+Encapsulation
+Module boundary
+API design: when some classes or methods only meant for internal usage and should not be accessed by
+consumers of the module.
+
+### Q17. `lateinit` and `lazy` in Kotlin
+
+`lateinit` - useful in a scenario when we don't want to initialize a variable at the time of
+declaration and want to initialize at some later point in time, but also make sure that we
+initialize before we use.
+
+`lateinit` keyword will allow compiler to check and throw UninitializedPropertyAccessException if
+not initialized during compile time. It also has a way to check if `lateinit` variable is
+initialized or not by `isInitialized` property.
+
+```kotlin
+    private lateinit var name: String
+if (this::name.isInitialized) {
+    //access name
+} else {
+    //init or do something else
+}
+```
+
+It can only be used with var keyword. Common sense because property is given value after which means
+it must be assignable.
+
+`lazy` in Kotlin is useful in scenarios where we want to create an object inside a class, but that
+creation is expensive and might lead to a delay in the creation of that object that is dependent on
+that expensive object.
+
+`lazy` can only be used with val keyword hence read only property.
+
+```kotlin
+
+class Employee(val id: Int, val name: String)
+
+class User {
+    private val employee: Employee by lazy { Employee(122, "Ajay") }
+}
+```
+
+In above example, Employee will get initialized only when it is accessed for the first time, else it
+will not initialized. Subsequent access of the object will return the same object. Initialized once
+and reuse object.
+
+### Q18. launch vs async
+
+They are both used to start a coroutine.
+
+launch : Fire and forget
+async : perform a task and return a result.
+
+`launch` returns a `Job` and doesn't carry any resulting value whereas the `async` returns an
+instance of `Deferred<T>` which has an `await()` function that returns the result of the coroutine
+like we have future in Java in which we do future.get() to get the result.
+
+```kotlin
+
+val defferedJob = GlobalScope.async(Dispatchers.Default) {
+    return@async 10
+}
+
+val result = defferedJob.await()
+```
+
+Check AsyncWork.kt file to check how async is also used to perform multiple tasks together.
+
+If any exception comes inside the `launch` block, it crashes the application if we don't handle
+whereas that is not the case with `async`. It is stored inside the resulting `Deferred` object and
+will not be delivered anywhere else. It will silently dropped unless we handle it.
+
+### Q19. What is multidex in Android?
+
+Mainly it is used to overcome the method reference limit and support large codebases. It is used
+when an app has more than 65536 method references, which is the limit of the DEF (Dalvik executable
+format)
+
+A DEX file contains compiled code that is executed by the Android Runtime Environment. If an app
+exceeds the limit of method references then it cannot fit in a single dex file and we can use
+MultiDex to solve the problem.
+
+```kotlin
+class application : MultiDexApplication() {
+
+}
+
+//OR in gradle build file
+
+android {
+    defaultConfig {
+        // ...
+        multiDexEnabled = true
+    }
+}
+```
+
+### Q20. What is ViewModel in Android?
+
+`ViewModel` holds the state of the UI and exposes the state to UI. It is mainly used to persist data
+during the configuration/ orientation changes. ViewModel is a lifecycle aware component of android
+ecosystem to hold the state of UI. It is attached to the lifecycle of an Activity, so whenever
+`onFinish()` is triggered then and then only it will be cleared otherwise it will persist in memory.
+
+### Q21. what is init block in Kotlin?
+
+Usually OOP languages allows you to write code inside primary constructor and Kotlin has a concise
+way of writing primary constructor in class declaration itself, so when we want to write additional
+code inside primary constructor we can make use of the `init{...}` block where we can write
+statements and expressions that must be done right after primary constructor.
+
+```kotlin
+class User(firstName: String, lastName: String) { // Primary constructor
+
+    init {
+        val fullName = "$firstName $lastName"
+        println(fullName)
+    }
+}
+```
+
+A class can have more than one init block and in that case, blocks are executed in the same order as
+they appear in the class body considering the properties if there are any in between.
+
+### Q23. 

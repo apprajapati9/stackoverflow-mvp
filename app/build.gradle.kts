@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.apprajapati.mvp_stackoverflow"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.apprajapati.mvp_stackoverflow"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -64,4 +64,5 @@ dependencies {
     testImplementation(libs.org.jetbrains.kotlinx.coroutines.test)
     // comes with testing functionality that we need to test.
 
+    implementation(libs.google.code.gson)
 }
