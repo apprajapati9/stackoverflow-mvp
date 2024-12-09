@@ -434,11 +434,11 @@ like we have future in Java in which we do future.get() to get the result.
 
 ```kotlin
 
-val defferedJob = GlobalScope.async(Dispatchers.Default) {
+val deferredJob = GlobalScope.async(Dispatchers.Default) {
     return@async 10
 }
 
-val result = defferedJob.await()
+val result = deferredJob.await()
 ```
 
 Check AsyncWork.kt file to check how async is also used to perform multiple tasks together.
@@ -446,6 +446,15 @@ Check AsyncWork.kt file to check how async is also used to perform multiple task
 If any exception comes inside the `launch` block, it crashes the application if we don't handle
 whereas that is not the case with `async`. It is stored inside the resulting `Deferred` object and
 will not be delivered anywhere else. It will silently dropped unless we handle it.
+
+- When we want to make two network calls in parallel, we can use `async`.
+- With `async`, use supervisorScope with the individual try-catch for each task, when you want to
+  continue with other tasks if one or some of them have failed.
+- with `async`, use CoroutineScope with the top level try-catch, when you do not want to continue
+  with other tasks if any of them have failed.
+- The major difference is that a coroutineScope will cancel whenever any of its children fail. If we
+  want to continue with the other tasks even when one fails, we go with the supervisorScope. A
+  supervisorScope won't cancel other children when one of them fails.
 
 ### Q19. What is multidex in Android?
 
@@ -499,4 +508,294 @@ class User(firstName: String, lastName: String) { // Primary constructor
 A class can have more than one init block and in that case, blocks are executed in the same order as
 they appear in the class body considering the properties if there are any in between.
 
-### Q23. 
+### Q22. What is a coroutine?
+
+A framework to manage concurrency in a more performant and simple way with its lightweight thread
+which is written on top of the actual threading framework to get the most out of it by taking the
+advantage of cooperative nature of functions. It is more like a framework to manage threads and use
+them efficiently.
+
+Good read on coroutines - [Coroutines](https://outcomeschool.com/blog/kotlin-coroutines)
+
+### Q23. Dispatchers in Coroutines?
+
+Dispatchers help coroutines in deciding the thread on which the task has to be done. We use
+coroutines to perform certain tasks efficiently. Coroutines run the task on a particular thread.
+Coroutines take the help of dispatchers in deciding the thread on which the task has to be done.
+Dispatchers are like Schedules in RxJava.
+
+Types
+
+- Dispatchers.Default
+    - We should use to perform CPU-intensive tasks
+        - matrix multiplication
+        - doing operations on bigger list in the memory like sorting, filtering, searching etc.
+        - Applying the filter on the Bitmap present in the memory, Not for reading the image file
+          present on the disk
+        - Parsing the JSON available in the memory, not by reading the JSON file on the disk
+        - Scaling the bitmap already present in the memory
+- Dispatchers.IO
+    - Use to perform disk or network IO related tasks
+        - any network operations like making a network call
+        - downloading a file from the server
+        - Moving a file from one location to another on disk
+        - reading/ writing from/to a file.
+        - making database query
+        - Loading the shared preference
+- Dispatchers.Main
+    - Use to run a coroutine on the main thread of Android. Mainly at places where we interact with
+      the UI and perform small tasks.
+        - Performing all UI related tasks
+        - Any small task like any operation on a smaller list present in the memory
+- Dispatchers.Unconfined
+    - A coroutine dispatcher that is not confined to any specific thread. It runs on the thread on
+      which it was started and resumed on the thread that resumed it.
+    - We should use this when we don't care where the coroutine will be executed.
+
+### Q24. CoroutineScope vs SupervisorScope
+
+- CoroutineScope will cancel whenever any of its children fail. Use this scope with top level
+  try-catch, when we don't want to continue with other tasks if any of them have failed.
+- SupervisorScope won't cancel other children when one of them fails. Use this scope with try-catch
+  for each task, when we want to continue with other tasks if one or MORE of them have failed.
+
+### Q25. What is CoroutineContext in Kotlin?
+
+- CoroutineContext is an interface that helps us define the context or the environment in which a
+  coroutine executes, using various elements.
+- It helps us define
+    - Dispatcher - helps in deciding the thread on which the task has to be done.
+    - Job - it represents the lifecycle of a coroutine, including its cancellation and completion
+      states.
+    - CoroutineName - it helps us providing a name for the coroutine, hence useful for debugging.
+    - CoroutineExceptionHandler - used to handle uncaught exceptions in coroutines.
+
+```kotlin
+    import kotlin.coroutines.CoroutineContext
+
+GlobalScope.launch(
+    Dispatchers.IO +
+            Job() +
+            CoroutineName("Ajay") +
+            CoroutineExceptionHandler { _, _ -> }
+) {
+    //add logic for a task
+}
+
+// To create a context
+val coroutineContext: CoroutineContext = Dispatchers.IO +
+        Job() +
+        CoroutineName("Ajay") +
+        CoroutineExceptionHandler { _, _ -> }
+
+GlobalScope.launch(coroutineContext)
+```
+
+### Q26. Convert a callback to coroutine, what do we need?
+
+1. We need to create a suspend function
+2. Use `suspendCoroutine` to suspend execution of a block, and it provides `continuation` object to
+   resume execution at a later point
+3. use `continuation.resume(result)` when triggered success
+4. use `continuation.resumeWithException(throwable)` to throw error
+5. if you want to support cancellable, then you can use `suspendCancellableCoroutine`
+
+Read more [Callback to coroutine](https://outcomeschool.com/blog/callback-to-coroutines-in-kotlin)
+
+### Q27. What is Flow?
+
+Flow is an async data stream (generally comes from a task) that emits values to the collector and
+gets completed with or without an exception. Components of Flow are : Flow Builder, Operator and
+Collector.
+
+- Flow Builder: purpose of this is to doing a task and emitting items/values. We can think of this
+  as a producer of data.
+- Operator - These help you transform the data from one format to another.
+- Collector - Collector collects the items emitted using the Flow Builder. Think of this as a
+  consumer of data.
+
+```kotlin
+flow {                  //Flow builder
+    (0..10).forEach {
+        emit(it)
+    }
+}.map {                   //Operator
+    it * it
+}.collect {    //Collector
+    println("$it")
+}
+```
+
+`flowOn` operator is used to control the thread on which the task will be done. It is equivalent of
+`subscribeOn()` in RxJava.
+
+Types of flow builders
+
+1. flowOf() - It is used to create a flow from a given set of items.
+2. asFlow() - extension function that helps to convert type into flows
+3. flow {} - create a flow
+4. channelFlow{} - creates flow with the elements using send provided by the builder.
+
+### Q28. Cold flow vs Hot flow?
+
+Cold Flow
+
+- it emits data only when there is a collector
+- it does not store data
+- it cannot have multiple collectors
+
+HotFlow
+
+- it emits data even when there's no collector
+- it can store data
+- it can have multiple collectors
+- `SharedFlow` and `StateFlow` are hot flows as they propagates items to multiple consumers.
+  `StateFlow` is a special shareFlow that maintain the current state by .value property.
+- Live video feed is the example of hot flows as all viewers will get to see exact same timeline of
+  video being played.
+- You can use `stateIn` and `shareIn` to convert cold flow `flow{}` to hot flow.
+
+Flow builders : flow and callbackFlow
+Cold and hot flows: sharedIn , stateFlow and ShareFlow
+
+```kotlin
+
+//SharedFlow
+flow {
+    repeat(100) {
+        delay(3000)
+        Log.d("Flow", "***************************** ")
+        Log.d("Flow", "emitting  = $it ")
+        emit(it)
+    }
+    Log.d("Flow", "emission done ")
+}.shareIn(scope, SharingStarted.Eagerly, replay = 1)
+
+
+//StateFlow
+flow {
+    repeat(100) {
+        delay(3000)
+        Log.d("Flow", "***************************** ")
+        Log.d("Flow", "emitting  = $it ")
+        emit(it)
+    }
+    Log.d("Flow", "emission done ")
+}.stateIn(scope, SharingStarted.WhileSubscribed(), initialValue = 1)
+
+//SharingStarted.Eagerly - sharing starts immediately and never stops
+//SharingStarted.Lazily - Sharing is started when first subscriber appears and never stops.
+
+//whileSubscribed - starts emitting/sharing only when subscribers turns from 0 to 1, and stop sharing when the number of subscribers turns from 1 to 0, making it similar to liveData, but added benefit is that repeatOnLifeCycle and flowWithLifeCycle. 
+```
+
+SharedFlow and StateFlow : Which one to choose ? (Both are hot flows)
+
+- I need to have latest value at any point of time using .value : StateFlow.
+
+- More than latest value using replay : SharedFlow.
+
+- Need repeated values : SharedFlow.
+
+- To convert any flow to a `StateFlow`, use the `stateIn` intermediate operator.
+
+- Use `shareIn` function returns a `SharedFlow`, a hot flow that emits values to all consumers that
+  collect from it. A `SharedFlow` is a highly configurable generalization of `StateFlow`
+
+### Q29. What if we don't want to collect stream of data when UI is not visible?
+
+```kotlin
+
+//#1 you can convert to live data using asLiveData() and observe
+val flowOfNumbers = flow {
+    repeat(20) {
+        delay(3000)
+        emit(it)
+    }
+}
+repository.flowOfNumbers.asLiveData()
+
+
+//#2 collecting on lifecycle events
+viewLifecycleOwner.lifecycleScope.launch {
+    viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        appState.collect {
+            when (state) {
+                APPSTATE.LOADING -> {
+                    //green indicator somewhere in UI 
+                }
+
+                APPSTATE.IDLE -> {
+                    //do not turn the indicator to green
+                }
+            }
+        }
+    }
+}
+// OR
+
+viewLifecycleOwner.lifecycleScope.launch {
+    appState.flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED).collect {
+        when (it) {
+            is APPSTATE.LOADING -> {
+
+            }
+            is APPSTATE.IDLE -> {
+                //do not turn the indicator to green
+            }
+        }
+    }
+}
+```
+
+### Q30. StateFlow vs SharedFlow?
+
+StateFlow
+
+- Needs an init value and emits as soon as the collector starts collecting
+- `val stateFlow = MutableStateFlow(0)`
+- Only emits the last known value
+- it has the value property, we can check the current value. It keeps a history of one value that we
+  can get directly without collecting.
+- Doesn't emit consecutive repeated values, it emits value only when it is distinct from the
+  previous one.
+- Similar to liveData except for the lifecycle awareness. We must use `repeatOnLifecycle` scope with
+  Stateflow to add lifecycle awareness to it, then it will become exactly like livedata.
+- In Android, `StateFlow` is a great fit for classes that need to maintain an observable mutable
+  state
+- Unlike a cold flow built using the `flow` builder, a `StateFlow` is hot: collecting from the flow
+  doesn't trigger any producer code.
+
+SharedFlow
+
+- doesn't need init value so does not emit any value by default.
+- `val sharedFlow = MutableSharedFlow<Int>()`
+- can be configured to emit many previous values using the replay operator
+- it doesn't have the value property
+- it emits all the values and doesn't care about the distinct value from the previous item. It emits
+  consecutive repeated values also.
+- Not similar to LiveData.
+- You can create a SharedFlow without using `shareIn`
+- `MutableSharedFlow` also has a `subscriptionCount` property that contains the number of active
+  collectors so that you can optimize your business logic accordingly. `MutableSharedFlow` also
+  contains a `resetReplayCache` function if you don't want to replay the latest information sent to
+  the flow.
+
+When we make a network call, and if orientation changes, then `StateFlow` will store the latest/last
+value and store it, so another network call will not be made. In case of `SharedFlow` nothing will
+get collected here as SharedFlow doesn't store any data. Have to make a new network call.
+
+In case of showing SnackBar, orientation change should not trigger snack bar message again and in
+this case, `SharedFlow` is useful because it will not show SnackBar again as intended.
+
+Read
+more [SharedFlow vs StateFlow](https://developer.android.com/kotlin/flow/stateflow-and-sharedflow)
+
+### Q31. Zip, merge, combine in Flow?
+
+Check CombineZipMergeStateFlow.kt file for examples.
+
+Zip - runs both flows in parallel and gives the results of both tasks in a single callback when both
+tasks are completed.
+
+### Q32. 
