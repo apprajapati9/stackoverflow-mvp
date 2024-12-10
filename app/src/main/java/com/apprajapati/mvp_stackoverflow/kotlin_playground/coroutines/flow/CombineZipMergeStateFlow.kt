@@ -1,4 +1,4 @@
-package com.apprajapati.mvp_stackoverflow.kotlin_playground.coroutines
+package com.apprajapati.mvp_stackoverflow.kotlin_playground.coroutines.flow
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.zip
 
 
-suspend fun main(){
+suspend fun main() {
 
     val flow1 = (1..10).asFlow().onEach { delay(1000) }
     val flow2 = (10..20).asFlow().onEach { delay(100) }
@@ -21,19 +21,17 @@ suspend fun main(){
     // thus output will have 18,19,20 only..
     // and flow1 will trigger on every 1 second n print
     //So all in all, combine gets triggered when either of flow emits a value.
-    flow1.combine(flow2){ //useful when you want to combine two states and combine them together to show on UI.
-        num1, num2 ->
-            listOf(num1, num2) // combined both.. as a result.
-    }.collect {
-        value ->
-            println("combine- $value")
-            //println("combine- $num2")
+    flow1.combine(flow2) { //useful when you want to combine two states and combine them together to show on UI.
+            num1, num2 ->
+        listOf(num1, num2) // combined both.. as a result.
+    }.collect { value ->
+        println("combine- $value")
+        //println("combine- $num2")
     }
 
     //exactly opposite is ZIP - when it will wait for both flow to emit and then collect will trigger
     //in this case it will print both values together in right order..
-    flow1.zip(flow2){
-        num1, num2 ->
+    flow1.zip(flow2) { num1, num2 ->
         listOf(num1, num2)
     }.collect {
         println("zip $it")

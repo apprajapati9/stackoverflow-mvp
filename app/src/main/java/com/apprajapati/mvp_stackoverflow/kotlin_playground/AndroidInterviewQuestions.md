@@ -394,8 +394,10 @@ initialized or not by `isInitialized` property.
     private lateinit var name: String
 if (this::name.isInitialized) {
     //access name
+    TODO()
 } else {
     //init or do something else
+    TODO()
 }
 ```
 
@@ -467,9 +469,7 @@ exceeds the limit of method references then it cannot fit in a single dex file a
 MultiDex to solve the problem.
 
 ```kotlin
-class application : MultiDexApplication() {
-
-}
+class MultiDexApp : MultiDexApplication()
 
 //OR in gradle build file
 
@@ -577,7 +577,7 @@ GlobalScope.launch(
     Dispatchers.IO +
             Job() +
             CoroutineName("Ajay") +
-            CoroutineExceptionHandler { _, _ -> }
+            CoroutineExceptionHandler { }
 ) {
     //add logic for a task
 }
@@ -586,7 +586,7 @@ GlobalScope.launch(
 val coroutineContext: CoroutineContext = Dispatchers.IO +
         Job() +
         CoroutineName("Ajay") +
-        CoroutineExceptionHandler { _, _ -> }
+        CoroutineExceptionHandler { }
 
 GlobalScope.launch(coroutineContext)
 ```
@@ -631,10 +631,13 @@ flow {                  //Flow builder
 
 Types of flow builders
 
-1. flowOf() - It is used to create a flow from a given set of items.
-2. asFlow() - extension function that helps to convert type into flows
-3. flow {} - create a flow
+1. flowOf() - It is used to create a flow from a given/fixed set of items.
+2. asFlow() - extension function that helps to convert type into flows, can be used on Collections
+3. flow {} - create a flow using suspendable lambda block. This allows you to emit values using
+   emit(). Builder function to construct arbitrary flows from sequential calls to the emit function
 4. channelFlow{} - creates flow with the elements using send provided by the builder.
+
+check `Flow.kt`, `TerminalOp.kt`, `StateFlow.kt` for examples.
 
 ### Q28. Cold flow vs Hot flow?
 
@@ -748,6 +751,11 @@ viewLifecycleOwner.lifecycleScope.launch {
 }
 ```
 
+Alternatively we can also get a `job` from a flow and can explicitly call `job.cancel()` to stop the
+flow, but you have to make sure to call these methods `onStart` and `onStop` to make sure flow is
+collected and stopped accordingly. More better solution is to convert it to `liveData` using
+`asLiveData()` terminal operator on flow which supports lifecycle awareness.
+
 ### Q30. StateFlow vs SharedFlow?
 
 StateFlow
@@ -798,4 +806,321 @@ Check CombineZipMergeStateFlow.kt file for examples.
 Zip - runs both flows in parallel and gives the results of both tasks in a single callback when both
 tasks are completed.
 
-### Q32. 
+### Q32. How to remove duplicates from an array/list in kotlin?
+
+1. toSet() / toMutableSet()
+2. distinct()
+3. toHashSet()
+
+```kotlin
+    val list = listOf(1, 1, 3, 2, 3, 1, 1, 2, 3).toSet()  //maintains the original order of items
+val list2 = listOf(1, 1, 3, 2, 3, 1, 1, 2, 3).distinct() //maintains original order of items
+val list3 = listOf(1, 1, 3, 2, 3, 1, 1, 2, 3).toHashSet() // sorts it and doesn't maintain order.
+
+println(list)
+println(list2)
+println(list3)
+
+/* output:
+[1, 3, 2]
+[1, 3, 2]
+[1, 2, 3]
+    
+ */
+```
+
+### Q33. launchIn operator?
+
+It is a shortcut operator for two operations. First `scope.launch` and then `collect`
+
+```kotlin
+import kotlin.coroutines.EmptyCoroutineContext
+
+val scope = CoroutineScope(EmptyCoroutineContext)
+flow.launchIn(scope)
+
+//above line does the following
+scope.launch {
+    flow.collect {}
+}
+```
+
+`collect` is a suspending function and launchIn isn't. It means collect suspends coroutine until it
+is
+finished and code executes sequentially. `launchIn` twice will execute code concurrently. It is
+similar to having two `launch` blocks in runBlocking code.
+
+check Flow.kt file for examples.
+
+using launchIn, code can be more concise like below example
+
+```kotlin
+
+val flow = listOf(1, 2, 3, 4)
+viewModelScope.launch {
+    flow.collect {
+        println(number)
+    }
+}
+
+//using launchIn
+flow.onEach {
+    prinln(it)
+}.launchIn(viewModelScope)
+```
+
+### Q34. map operator in flow, what does it do?
+
+It transforms the data into another form.
+`inline fun <T,R> Flow<T>.map(crossinline transform: suspend (T) -> R) : Flow<R>`
+
+From that you can see that it takes T type of Flow and returns flow of type R, so it transforms
+data. This is useful when you want to get data and transform that data to UIState in order to show
+different states for UI based on data received.
+
+For example, list of stocks is received from the API, now using map, you can map it to
+UiState.Loading, UiState.Success or UiState.Error.
+
+```kotlin
+//simple example of mapping Int to string
+flowOf(1, 2, 3, 4, 5).map {
+    "Emission $it"
+}.collect {
+    println(it) // will print String value "Emission $it" 
+}
+```
+
+Read on diff operators of Flow [Flow] (https://flowmarbles.com/#map)
+
+### Q35. Basic intermediate operators for Flow?
+
+1. `filter{}` - filters based on condition on each emission
+2. `filterNot{}` - opposite of filter. Only gets values that doesn't meet that condition.
+3. `map` and `mapNotNull{}` - transforms data and make sure its not null.
+4. `filterIsInstance<Type>()` - makes sure that certain type is filtered.
+5. `take(count)` - will only allow given count number of emissions from flow. i.e if flow emits from
+   1 to 5 int values, then only take(3) will only print from 1 to 3.
+6. `takeWhile(condition)` - similar to filter but major difference is takeWhile will cancel the
+   upstream flow if predicate (condition) is false. Filter will go through all list and filter based
+   on condition whereas takeWhile will cancel emissions if condition isn't met. Think of it like
+   emit/take while this is true, after that stop.
+7. `drop(count)` - drops the number of given count emissions, useful in case when not interested in
+   some initial values and only subsequent values.
+8. `dropWhile(predicate)` - Keep dropping emissions until the condition is met.
+9. `transform` - it allows us to emit values
+    ```kotlin
+    flowOf(1,2,3,4,5).transform {
+        emit(it)
+        emit(it*10) 
+    }.collect {
+        print(it) 
+    }
+   //output
+   //10,20,30,40,50
+    ```
+   The major diff is that using transform you can emit diff values too, not just transformed
+   original ones. In the block of transform, you get type `FlowCollect<Type>` as `it` instead of
+   Type that we get in map i.e int.
+10. `withIndex()` - collect will have data with index value. Data will be printed like
+    `IndexedValue(index=1, value=10)` as we collect.
+11. `distinctUntilChanged()` - only prints distinct values, same values will be ignored. i.e if we
+    have a flow of (1,1,2,3,4,1), then values printed will be (1,2,3,4,1). Last 1 will be printed
+    because it is distinct from the last value.
+12. `cancellable()` will ensure that flow is active using `ensureActive()` and if not, flow is
+    cancelled.
+
+### A36. How to handle exception in Flows?
+
+You can surround flow collect statements with try-catch or you can also use `catch()` operator.
+`onCompletion` will also return cause which will be null if there's no exception. But all exceptions
+are travelled up from collect so surrounding collect{} block, we can handle exceptions.
+
+`try-catch` is a traditional way of handling it and using `catch()` operator is a declarative way of
+handling exceptions in flows.
+`catch()` block gives throwable which we can use to know what type of exception is thrown. Important
+to note that `catch()` handles exceptions from upstream, so ideal position to place this operator is
+right above `collect()` so all exceptions thrown upstream can be caught in `catch()` block.
+
+The best way to handle exceptions happening in collect block is to have `onEach` block and then have
+`catch` block, it will make sure that all emissions are without exceptions and ready to be
+collected.
+
+i.e if exception is thrown in map{} operator of flow and catch block is above that map{}, then that
+exception will not be handled. Map{} block must be above catch block.
+
+Also in `catch` block we can emit different value to handle the exception. You can also use that
+block as a fallback flow. When we have two sources of data, in case of one fails, we can use
+different flow and emit/emitAll inside `catch` block.
+
+```kotlin
+private fun stockFlow(): Flow<String> = flow {
+    emit("Apple")
+    emit("Google")
+    emit("Netflix")
+}
+
+val stockFlow = stockFlow()
+
+stockFlow.onCompletion {
+    if (it == null) { // cause as it
+        println("Flow completed successfully")
+    } else {
+        println("Flow completed exceptionally with cause $it")
+    }
+}.onEach {
+    throw Exception("Exception thrown")
+    println("Collected $it")
+}.catch { //throwable as it
+    println("Handled exception $it")
+}.collect {
+    println(it)
+}
+```
+
+### A37. how to recollect flow in case of exception?
+
+Using `retry` which will give us exception cause as it, we can perform retry of producer code.
+`retryWhen` offers attempt and exception, so based on attempts, we can write more better logic for
+delays in subsequent retrying of flow when it fails.
+
+```kotlin
+flow<String> {
+
+}.retryWhen { //to params are offered, cause, attempt ->  in this lambda function
+    //it as cause
+    delay(1000 * (attempt + 1)) // attempt
+    cause is Exception // Predicate for retryWhen
+}
+```
+
+### Q38. What problems we might face when using Flow instead of LiveData?
+
+1. Flow producer continues to run when the app is in the background
+2. Activity receives emissions and renders UI when it is in the background
+3. Multiple collectors create multiple flows
+4. Configuration change restarts the flow
+
+We can get a `job` from lifecycleScope.launch in which we are collecting flow, and then cancelling
+the job using `job.cancel()` in onStop; how ever, that is a lot of boilerplate code. We can use
+`repeatOnLifecycle` as follows.
+
+Alternatively we can also use `.flowWithLifecycle` to collect flow.
+
+Solution for problem 1 and 2.
+=============================
+
+```kotlin
+lifecycleScope.launch {
+    repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewmodel.flow.collect {
+            //collect flow here, such as uiState.
+        }
+    }
+}
+
+//In fragment, you use it like this in onViewCreated
+viewLifecycleOwner.lifecycleScope.lauch {
+    viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+        //collect flow here.
+    }
+}
+
+// Using flowWithLifecycle
+lifecycleScope.launch {
+    viewmodel.flowOfUiState
+        .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+        .collect {
+            //collect and render state.
+        }
+}
+```
+
+===== Cold flow =====
+
+- it becomes active on collection
+- it becomes inactive on cancellation of the collecting coroutine
+- emit individual emissions to every collector, so if you have two launch blocks collecting, then
+  both gets all values from flow.
+
+```kotlin
+// #2 - inactive on cancellation
+fun coldFlow() = flow {
+        emit(1)
+        delay(1000)
+
+        emit(2)
+        delay(1000)
+
+        emit(3)
+    }
+
+suspend fun main(): Unit = coroutineScope {
+    var job = launch {
+        coldFlow().onCompletion {
+            println("Flow of collector 1 completed")
+        }.collect {
+            print("collected $it")
+        }
+    }
+    delay(1500) //delay is less than time needed for flow completion
+    job.canelAndJoin()
+
+    //OUTPUT - it will become inactive after emitting 2, value 3 will not be emitted.
+}
+```
+
+======= Hot Flow =======
+
+- are active regardless of whether there are collectors
+- stay active even when there is no more collector
+- emissions are shared between all collectors
+
+Check HotFlow.kt for example.
+
+Solution for problem #3 and #4
+==============================
+You must use `SharedFlow` to mitigate the issue 3 and 4, and you can use that by using `shareIn`
+operator.
+Signature of SharedFlow
+`fun <T> Flow<T>.shareIn(scope: CoroutineScope, started: SharingStarted, replay: Int = 0) : SharedFlow<T>`
+
+```kotlin
+//converting cold flow into hot flow
+val flowOfUiState: Flow<UiState> = repository.latestStocklist
+    .map {
+        UiState.Success(it)
+    }.onStart {
+        emit(UiState.Loading)
+    }.shareIn(
+        scope = viewmodelScope, // for viewModels
+        started = SharingStarted.WhileSubscribed, // emission only happens when there's a collector
+        replay = 1
+    )
+```
+
+The above solution will make sure that multiple collectors will not make network calls to get
+values. One network call and all collectors will get the values as it is `sharedFlow`.
+Due to `WhileSubscribed`, configuration change will cause the flow to not have any collector and
+stop the flow and flow will be restarted again with a network call. To fix this issue, you should
+pass `stopTimeoutMillis` which will wait for given time before stopping as follows:
+`SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000)`
+
+Without passing `replay`, configuration change will have no state and thus could show blank screen,
+so you should pass `replay` option to indicate that flow should emit its most recent emission on a
+new flow collector. Think of it like, how many emissions are replayed? when there's a new collector.
+
+### Q39. When to use SharedFlow and StateFlow?
+
+SharedFlow has no initial value, StateFlow does.
+Replay cache is customizable in SharedFlow, StateFlow is fixed to 1.
+emission of subsequent equal values is possible in SharedFlow, no in Stateflow.
+StateFlow will only emit changes that are new, not same as before.
+
+- Whenever we want to use a hot flow, use a `StateFlow` by default. Only for special requirements,
+  switch to `SharedFlow`.
+- `StateFlows` are more efficient when used for state
+- `StateFlows` provide convenient option to read and write its value in a non-suspending fashion by
+  synchronously accessing the .value property.
+
+
+ 
