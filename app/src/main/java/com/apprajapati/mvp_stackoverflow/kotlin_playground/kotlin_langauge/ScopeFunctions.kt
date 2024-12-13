@@ -17,7 +17,7 @@ import kotlin.random.Random
 
  */
 
-data class Person(val name: String, var age: Int, val from: String){
+data class Person(val name: String, var age: Int, val from: String) {
     fun incrementAge() = apply {
         age++
     }
@@ -27,16 +27,17 @@ fun getRandomValue(): Int {
     return Random.nextInt(1, 100)
 }
 
-fun getPersonName(p: Person) : String {
+fun getPersonName(p: Person): String {
     println("Inside getPersonName - $p")
     return p.name
 }
 
-fun main(){
+fun main() {
 
     //--USE OF let
     //let : executing a lambda on non-nullable objects
     //Introducing an expression as a variable in local scope
+    println("Let--> ")
     val person = Person("Ajay", 30, "India").let {
         println(it.name) //accessing object within that object space
         it.incrementAge() //accessing objects methods in a local scope without its name.
@@ -45,11 +46,13 @@ fun main(){
     }
 
     // run : object configuration and computing the result
+    println("Run--> ")
     person.run {
         println()
     }
 
     // you can change object's value using apply like this.
+    println("Apply--> ")
     val ajay = Person(age = 12, name = "Ajay", from = "India").apply {
         age = 15
     }
@@ -61,6 +64,7 @@ fun main(){
     //  to read.
 
     //also should have a returned value to capture and use
+    println("Also--> ")
     getRandomValue().also {
         println("$it") // function returns an int number thus accessed using It
     }
@@ -75,7 +79,7 @@ fun main(){
     getPersonName(Person("ajay2", 12, "whatever")).also {
         println("returned $it")
         it.apply { //performed action on returned object it which is string.
-            for(i in it){
+            for (i in it) {
                 println(i)
             }
         }
@@ -96,25 +100,26 @@ fun main(){
     numbers.run {
         add(122)
         // run can have access to object using this
-        for(i in this){
+        for (i in this) {
             println(i)
         }
     }
 
     //with some object perform operations on. example, operations on list of numbers
-    with(numbers){
+    println("With--> ")
+    with(numbers) {
         val first = first()//this.get(0)
         val last = last() //this.get(this.size-1)
         println("first $first and last $last")
     }
 
-    with(getRandomValue()){ //object is Int here returned value
+    with(getRandomValue()) { //object is Int here returned value
         println("with $this")
     }
-    with(ajay3){ //with works with some object..
+    with(ajay3) { //with works with some object..
         println("with ${this.age}")
     }
-    with(person){ //DOESN'T work because of let {}, it doesn't just forms an object, it also adds let {} block that has Unit returned value thus returns Unit.
+    with(person) { //DOESN'T work because of let {}, it doesn't just forms an object, it also adds let {} block that has Unit returned value thus returns Unit.
         println("with ${this}")
     }
 }

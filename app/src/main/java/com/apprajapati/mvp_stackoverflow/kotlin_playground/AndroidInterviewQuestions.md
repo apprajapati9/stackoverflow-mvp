@@ -1122,5 +1122,245 @@ StateFlow will only emit changes that are new, not same as before.
 - `StateFlows` provide convenient option to read and write its value in a non-suspending fashion by
   synchronously accessing the .value property.
 
+### Q40. What are channels?
 
- 
+Deferred (withheld or delayed for or until a stated time) values provide a convenient way to
+transfer a single value between coroutines. Channels provide a way to transfer a stream of values.
+
+Unlike a queue, a channel can be closed to indicate that no more elements are coming. On the
+receiver side it it is convenient to use a regular for loop to receive elements from channel.
+
+```kotlin
+val channel = Channel<Int>
+launch {
+    for (x in 1..5) channel.send(x * x)
+    channel.close()  // to indicate done sending
+}
+repeat(5) { println(channel.receive()) }
+```
+
+Use of channels:
+
+- Use channels to stream data asynchronously between coroutines. Such as streaming sensor data or
+  real-time chat applications
+- Employ channels for communication between the main UI thread and background coroutines. This
+  ensures that time consuming tasks like database operations or file downloads are executed off the
+  UI thread, preventing UI freeze.
+- Use channels for communication and coordination between concurrently running coroutines. Channels
+  can facilitate the exchange of information between parallel tasks, promoting efficient and
+  synchronised execution.
+- Implement a lightweight event bus using channels to facilitate communication between different
+  components in an application. This is useful for decoupling components and allowing them to react
+  to specific events.
+- Leverage channels to control the flow of data between coroutines. This can be helpful when
+  managing the rate at which data is processed to avoid overwhelming system resources.
+-
+
+### Q41. Side effects in jetpack compose?
+
+The purpose of side effects in Jetpack compose is to allow for the execution of non-UI related
+operations that change the state of the app outside of a composable function in a controlled and
+predictable manner. Side effects such as updating a database or making a network call, should be
+kept separate from the UI rendering logic to improve the performance and maintainability of code.
+
+`SideEffect` is a composable function that allows to execute a side effect when its parent
+composable
+is recomposed. A side effect is an operation that does not affect the UI directly, such as logging,
+analytics or updating external state. This function is useful for executing operations that do not
+depend on the composable's state or props. Triggers when parent composable is recomposed.
+
+- Logging and analytics
+- Performing one time initialization such as loading data from a file or initializing a library.
+
+`LaunchedEffect` is a composable function that executes a side effect in a separate coroutine scope.
+This function is useful for executing operations that can take a long time, such as network calls or
+animations, without blocking the UI thread. `key` parameter in `LaunchedEffect` is used to identify
+the instance and prevent it from being recomposed unnecessarily.
+
+- fetching data from a network
+- image processing, updating database
+
+`DisposableEffect` is a composable function that executes a side effect when parent composable is
+first rendered and disposes of the effect when the composable is removed from the UI hierarchy. This
+function is useful for managing resources that need to be cleaned up when composable is no longer in
+use, such as event listeners and animations. Triggers on first composition or key change.
+
+- adding and removing even listeners
+- Starting and stopping animations
+- bind and unbind sensor resources such as Camera, Location managers
+- managing database connections
+
+### Q42. Scope functions?
+
+`run, let, apply, also, with`, all these functions are used for switching the scope of the current
+function or variable. They are used to keep things that belong together in one place (mostly
+initializations)
+
+`run` lets you return anything you want and re-scopes the variable it is used on to `this`.
+`apply` will let you initialize variables of a particular object or instance. It is useful as a
+replacement for the Builder pattern, and if you want to re-use certain configurations.
+
+`let` mostly used to avoid null checks, but also can be used as a replacement for run.
+`also` use it when you want to use `apply`, but don't want to shadow `this` object.
+
+### Q43. Composable functions?
+
+1. Composable functions can execute in any order based on priorities.
+2. Composable functions can run in parallel.
+3. Recomposition skips as much as possible and it is optimistic.
+4. Composable functions might run frequently.
+
+### Q43. How Android handles touches?
+
+- Each user touch event is wrapped up as a MotionEvent
+- Describe's user's location
+    - ACTION_DOWN,
+    - ACTION_UP,
+    - ACTION_MOVE
+    - ACTION_POINTER_DOWN
+    - ACTION_POINTER_UP
+    - ACTION_CANCEL
+- Event metadata is included
+    - Touch location
+    - Number of pointers (fingers)
+    - Event time
+- A gesture is defined as beginning with ACTION_DOWN and ending with ACTION_UP
+
+1. Event start at the Activity with `dispatchTouchEvent()`, first method that will get called, if
+   you want to check, we can implement and monitor them how it works. Shouldn't change anything
+   because it traverse down through view hierarchy towards the children views.
+2. Event flow top down through views
+    - Parents (ViewGroups) dispatch event to their children
+    - can intercept events any time
+3. Events flow down the chain ( and back up) until consumed
+    - Views must declare interest by consuming ACTION_DOWN
+    - Further events not delivered for efficiency
+4. Any unconsumed events end at the Activity with onTouchEvent
+5. Optional external `onTouchListener` can intercept touches on any View/ViewGroup
+
+Activity's `onTouchEvent` is the last place/method to consume a touch on screen and if children or
+viewGroups consume that event, then it will not be visited so not the Activity is not the place to
+monitor touch events.
+
+#### FOR VIEWS
+
+- Activity.dispatchTouchEvent()
+    - always first to be called
+    - sends event to root view attached to Window
+    - onTouchEvent()
+        - called if no views consume the event
+        - always last to be called
+- View.dispatchTouchEvent()
+    - sends event to listener first, if exists
+        - View.OnTouchListener.onTouch()
+    - if consumed, process the touch itself
+        - View.onTouchEvent()
+
+#### FOR VIEWGROUPS
+
+- ViewGroup.dispatchTouchEvent()
+    - Check onInterceptTouchEvent(), primary use case is scrolling
+        - check if it should supersede children
+    - For each child view, in reverse order they were added
+        - if touch is relevant (inside view), child.dispatchTouchEvent()
+        - if not handled by previous, dispatch to next view
+    - Handle touch directly (same as view)
+- Touch interception onInterceptTouchEvent returns true
+    - Passes ACTION_CANCEL to active child
+    - all future events handled directly by ViewGroup
+- Child view can call requestDisallowTouchIntercept() to block onInterceptTouchEvent() for the
+  duration of the current gesture.
+    - flag is reset by fragment on each new gesture (ACTION_DOWN)
+
+Example of method calls if you have a view inside of FrameLayout and it doesn't consume touch event.
+If finger comes down and no view is interested in consuming that touch event.
+
+--> ACTION_DOWN:
+
+1. Activity.dispatchTouchEvent()
+2. ViewGroup.dispatchTouchEvent()     // FrameLayout
+3. View.dispatchTouchEvent()       // View -- Travel back up
+4. View.onTouchEvent //View
+5. ViewGroup.onTouchEvent()    //FrameLayout
+6. Activity.onTouchEvent()
+
+--> ACTION_MOVE/UP:
+
+1. Activity.dispatchTouchEvent()
+2. Activity.onTouchEvent()
+
+In case, View is interested and consumes the event, this would be the call order
+
+--> ACTION_DOWN:
+
+1. Activity.dispatchTouchEvent()
+2. ViewGroup.dispatchTouchEvent()
+3. View.dispatchTouchEvent()
+4. View.onTouchEvent()  //Interested and consumed up event.
+
+--> ACTION_UP/MOVE:
+
+1. Activity.dispatchTouchEvent()
+2. ViewGroup.dispatchTouchEvent()
+3. View.dispatchTouchEvent()
+4. View.onTouchEvent()  //Interested and consumed up event.
+
+Resource [How touch system works in Android](https://youtube.com/watch?v=EZAoJU-nUyI)
+
+#### Custom touch handling
+
+- Handling touch events
+    - Subclass override `onTouchEvent()`
+    - provide an `onTouchListener`
+- consuming events
+    - Return true with ACTION_DOWN to show interest
+        - even if you aren't interested in ACTION_DOWN, return true
+    - For other events, returning true simply stops further processing
+- useful constants available in ViewConfiguration
+    - getScaledTouchSlop()
+        - distance move events might vary before they should be considered drag
+    - getScaledMinimumFlingVelocity()
+        - speed at which the system considers a drag to be a fling
+    - getScaledPagingTouchSlop()
+        - touch slop used for a horizontal paging gesture (i.e ViewPager)
+    - Display values scaled for each device's density
+
+
+- Forward touch events i.e clicking on button clicks another one
+    - call target's dispatchTouchEvent()
+    - avoid calling target's onTouchEvent() directly
+- Stealing touch events (ViewGroup)
+    - subclass to override onInterceptTouchEvent()
+    - return true when you want to take over for the ViewGroup
+        - All subsequent events for the current gesture will come to your onTouchEvent directly
+        - onInterceptTouchEvent() will no longer be called for each event (one shot redirection)
+    - any current target will receive ACTION_CANCEL
+
+Custom Touch handling Warnings
+
+- call through to super whenever possible
+    - View.onTouchEvent() does a lot of state management (pressed, checked, etc) that you will lose
+      if you capture every touch
+- protect ACTION_MOVE with slop checks
+- Always handle ACTION_CANCEL
+    - container views with action (like scrolling) will steal events and you will likely need to
+      reset state
+    - remember after CANCEL, you will get nothing else.
+- Don't intercept events until you are ready to take them all
+    - intercept cannot be reversed until the next gesture.
+
+### Q Can you have a Fragment without view?
+
+### Q How would you pass an intent from one app to another app?
+
+### Q What is Mutex and what is the use case of that?
+
+### Q Passing viewmodel for jetpack screen/ composable function
+
+### Q Navigation in jetpack compose.
+
+### Q Jetpack compose and implement login using Fingerprint?
+
+
+
+
