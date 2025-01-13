@@ -705,6 +705,9 @@ SharedFlow and StateFlow : Which one to choose ? (Both are hot flows)
 - Use `shareIn` function returns a `SharedFlow`, a hot flow that emits values to all consumers that
   collect from it. A `SharedFlow` is a highly configurable generalization of `StateFlow`
 
+Resource playlist [Flow basics](https://youtube.com/watch?v=ZX8VsqNO_Ss)
+When to use what? [Hot flow vs Cold flow](https://youtube.com/watch?v=M8YtV47kaqA)
+
 ### Q29. What if we don't want to collect stream of data when UI is not visible?
 
 ```kotlin
@@ -1242,7 +1245,7 @@ Activity's `onTouchEvent` is the last place/method to consume a touch on screen 
 viewGroups consume that event, then it will not be visited so not the Activity is not the place to
 monitor touch events.
 
-#### FOR VIEWS
+## FOR VIEWS
 
 - Activity.dispatchTouchEvent()
     - always first to be called
@@ -1256,7 +1259,7 @@ monitor touch events.
     - if consumed, process the touch itself
         - View.onTouchEvent()
 
-#### FOR VIEWGROUPS
+## FOR VIEWGROUPS
 
 - ViewGroup.dispatchTouchEvent()
     - Check onInterceptTouchEvent(), primary use case is scrolling
@@ -1307,7 +1310,7 @@ In case, View is interested and consumes the event, this would be the call order
 
 Resource [How touch system works in Android](https://youtube.com/watch?v=EZAoJU-nUyI)
 
-#### Custom touch handling
+## Custom touch handling
 
 - Handling touch events
     - Subclass override `onTouchEvent()`
@@ -1349,7 +1352,106 @@ Custom Touch handling Warnings
 - Don't intercept events until you are ready to take them all
     - intercept cannot be reversed until the next gesture.
 
-### Q Can you have a Fragment without view?
+### Q44. Why avoid GlobalScope?
+
+GlobalScope is a poor practice and it should be avoided. 🚫
+Let me explain why, and what should we use instead.
+
+GlobalScope is just an empty placeholder for a lack of scope. It has no job, so it cannot be
+cancelled. It is an object, so it cannot be configured or overridden for testing. Those are its key
+problems.
+
+Whatever we start on a scope, like viewModelScope or lifecycleScope on Android, is associated to
+some view, and cancelled when this view is destroyed.
+❗GlobalScope is never cancelled, not even if our application is destroyed, what leads to memory
+leaks. ❗
+
+// Memory leak!
+fun getMoviesGenreList() = GlobalScope.launch {
+_movieGenreUiState.value = movieGenresUseCase()
+}
+
+// OK
+fun getMoviesGenreList() = viewModelScope.launch {
+_movieGenreUiState.value = movieGenresUseCase()
+}
+
+To test a coroutine we need to start it in a test scope. That is why a scope should be injected, so
+we can override it for testing.
+❗GlobalScope cannot be overridden, so its coroutines have limited testability. ❗
+
+Most scopes are configured. They can be configured with a dispatcher or an exception handler.
+GlobalScope does not allow that.
+
+single { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
+
+🚫 So in general, we should avoid using GlobalScope.
+✅ On Android views or view models we should use scopes from KTX, on other classes we should use an
+injected scope. Even if we do not need to use any advantages of a custom scope now, it is better to
+use it, to be able to use it later.
+
+### Q45 Can you have a Fragment without view?
+
+Headless fragments, have one really useful feature, they can be retained by the FragmentManager
+across configuration changes. Since they do not have any UI related to them, they do not have to be
+destroyed and rebuilt again when the user rotates the device for example. In order to activate this
+behavior, one just has to set the retained flag of the Fragment when it is initialized. This can be
+done in the onCreate method of the fragment.
+`setRetainInstance(true)` in OnCreate method.
+
+Understand retain of Fragment better
+here [Stackoverflow](https://stackoverflow.com/questions/11182180/understanding-fragments-setretaininstanceboolean)
+
+More
+info [Headless fragment](https://stackoverflow.com/questions/11531648/what-is-the-use-case-for-a-fragment-with-no-ui)
+
+### Q46. How to make your composable lifecycle aware?
+
+Composable lifecycle only consists of 3 stages.
+
+1. Enter composition
+2. recomposition
+3. leave the composition
+
+If you want to make composables aware of activity's lifecycle then do the following.
+
+1. get the lifecycleOwner reference
+   `val lifecycleOwner = LocalLifecycleOwner.current`
+
+2. Use `DisposableEffect` to act on that and capture events
+
+```kotlin
+DisposableEffect(lifecycleOwner) {
+
+    val lifecycleEvents = LifecycleEventObserver { source, event ->
+        when (event) {
+            Lifecycle.Event.ON_CREATE -> TODO()
+            Lifecycle.Event.ON_START -> TODO()
+            Lifecycle.Event.ON_RESUME -> TODO()
+            Lifecycle.Event.ON_PAUSE -> TODO()
+            Lifecycle.Event.ON_ON_DESTROY -> TODO()
+            Lifecycle.Event.ON_ON_ANY -> TODO()
+        }
+    }
+
+    lifecycleOwner.lifecycle.addObserver(lifecycleEvents) //This will now trigger based on activity's lifecycle events
+
+    onDispose {
+        lifecycleOwner.lifecycle.removeObserver(lifecycleEvents)
+    }
+} 
+```
+
+Using above steps, you can capture lifecycle method triggered and act or execute a piece of code
+based on lifecycle of activity, making your composable lifecycle aware.
+
+### Q47 what are the ways to load initial data in app?
+
+Watch video for information [WAYS to load initial data](https://www.youtube.com/watch?v=mNKQ9dc1knI)
+
+### Q48
+
+### What is a type-safe navigation in compose navigation?
 
 ### Q How would you pass an intent from one app to another app?
 
@@ -1360,7 +1462,6 @@ Custom Touch handling Warnings
 ### Q Navigation in jetpack compose.
 
 ### Q Jetpack compose and implement login using Fingerprint?
-
 
 
 
