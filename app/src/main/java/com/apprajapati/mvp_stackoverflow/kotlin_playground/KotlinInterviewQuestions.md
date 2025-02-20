@@ -109,6 +109,11 @@ more [read this link](https://medium.com/@przemek.materna/kotlin-is-not-primitiv
 standard functionality.
 For more [read this link](https://kotlinlang.org/docs/data-classes.html)
 
+Data class provides internally implemented toString and equals method to compare two objects
+depending on their fields, unlike normal class which does check for referential equality i.e where
+it points in the memory. Data class equal method performs equality of two data classes from their
+fields/attributes/variables.
+
 ### Q11. What is Property in Kotlin?
 
 **Short answer:** Variable having a class level scope which is declared inside the class and outside

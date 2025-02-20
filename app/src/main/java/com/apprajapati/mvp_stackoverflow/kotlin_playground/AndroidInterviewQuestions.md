@@ -1449,7 +1449,51 @@ based on lifecycle of activity, making your composable lifecycle aware.
 
 Watch video for information [WAYS to load initial data](https://www.youtube.com/watch?v=mNKQ9dc1knI)
 
-### Q48
+### Q48. Guide to improving compose performance.
+
+1. Avoid premature optimizations
+2. Initial composition time. It is not something you can escape from. Layout performance and
+   Recomposition
+3. In compose, we go through 3 steps 1 composition 2 Layout and then 3 Draw
+   with recomposition, you are skipping composition phase but that could trigger as well depending
+   on the stability of types of data. Stability allows us to skip execution of a composable body. It
+   is immutability.
+
+how to generate compiler metrics / report to see how many compose functions are skippable.
+
+```kotlin
+kotlinOptions {
+    freeCompilerArgs += [
+        "-P",
+        "plugin:...kotlin:reportsDestination=" + buildDir.absolutePath + "/compose_metrics"
+    ]
+}
+```
+
+More information [Detailed talk on Compose performance](https://youtube.com/watch?v=h1xTtTl0k7Q)
+
+### Q49. Working with files in Android
+
+`File("path/fileName.txt")` points to a file at runtime, from java.io.File
+exists() - check whether a given file exists or not.
+createNewFile() - create a file with fileName.txt
+mkdirs() - makes entire path with folders, including fileName.txt thus should have separate fileName
+if you want to create a file. i.e two folders will be created "path" and "fileName.txt", to create
+file, use `createNewFile` method on specific file name like File("name.txt")
+
+`listFiles()?.forEach` to get all files in a current directory if file path is for example
+File(".")
+
+just for knowledge purpose:
+drwxr-xr-x
+
+1. d - directory, - regular file, l symbolic link, c character device
+2. rwx - owner or user permission  (r-read,w-write,x-execute)
+3. r-x - group
+4. r-x - others
+
+rwx - Read (100) binary 4 decimal, write (010) binary 2 decimal, execute (001) binary 1 decimal
+4+2+1 = 7, 777 means public file to everyone including user.
 
 ### What is a type-safe navigation in compose navigation?
 
