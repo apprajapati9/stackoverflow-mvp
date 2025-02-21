@@ -1495,6 +1495,88 @@ drwxr-xr-x
 rwx - Read (100) binary 4 decimal, write (010) binary 2 decimal, execute (001) binary 1 decimal
 4+2+1 = 7, 777 means public file to everyone including user.
 
+FileInputStream = when we want to read from a file.
+FileOutputStream = when we want to write to a file.
+ByteArrayOutputStream = could be used for in data memory processing. i.e processing an image,
+applying some filter or drawing something on the image.
+
+### Q50. Ways to map Error handling class in Android
+
+Usually you can do the following:
+
+```kotlin
+sealed class Resource<T>(val data: T? = null, val message: String? = null) {
+    class Success<T>(data: T?) : Resource<T>(data)
+    class Error<T>(data: T? = null, message: String) : Resource<T>(data, message)
+}
+```
+
+Better way to map is following
+
+```kotlin
+import javax.xml.validation.Validator
+
+sealed interface Error  //just an interface
+
+//Generic error handling.. 
+
+typealias RootError = Error
+
+sealed interface Result<out D, out E : RootError> {
+    data class Success<out D, out E : RootError>(val data: D) : Result<D, E>
+    data class Error<out D, out E : RootError>(val error: E) : Result<D, E>
+}
+
+//USE CASE
+
+enum class PasswordError : Error {
+    TOO_SHORT,
+    NO_UPPERCASE,
+    NO_DIGIT
+}
+class UserDataValidator {
+    fun validatePass(pass: String): Result<Unit, PasswordError> {
+        if (pass.length < 8) {
+            return Result.Error(PasswordError.TOO_SHORT)
+        }
+        val hasUppercase = pass.any { it.isUpperCase() }
+        if (!hasUppercase) return Result.Error(PasswordError.NO_UPPERCASE)
+
+        val hasDigit = pass.any { it.isDigit() }
+        if (!hasDigit) return Result.Error(PasswordError.NO_DIGIT)
+
+        return Result.Success(Unit)
+    }
+}
+
+//You get type safety in error messages this way too and specific error message rather than string messages as Result.Error
+class UserViewMode(private val userDataValidator: UserDataValidator) : ViewModel() {
+
+    fun onLogin(pass: String) {
+        when (val result = userDataValidator.validatePass(pass)) {
+            is Result.Error -> {
+                when (result.error) {
+                    PasswordError.NO_DIGIT -> {
+
+                    }
+                    PasswordError.TOO_SHORT -> {
+
+                    }
+                    PasswordError.NO_UPPERCASE -> {
+
+                    }
+                }
+            }
+            else -> {
+
+            }
+        }
+    }
+}
+```
+
+Resource [Watch](https://youtube.com/watch?v=MiLN2vs2Oe0)
+
 ### What is a type-safe navigation in compose navigation?
 
 ### Q How would you pass an intent from one app to another app?
