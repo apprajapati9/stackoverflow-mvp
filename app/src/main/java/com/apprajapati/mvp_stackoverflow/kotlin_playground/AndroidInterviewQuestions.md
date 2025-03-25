@@ -1577,6 +1577,261 @@ class UserViewMode(private val userDataValidator: UserDataValidator) : ViewModel
 
 Resource [Watch](https://youtube.com/watch?v=MiLN2vs2Oe0)
 
+### Q51. Gestures in Compose
+
+`clickable` modifier allows easy detection of a click, but it also provides accessibility
+features and displays visual indicators when tapped( such as ripples).
+There are less commonly used gesture detectors that offer more flexibility on a lower level like
+PointerInputScope.detectTagGestures or PointerInputScope.detectDragGestures but don't include the
+extra features.
+All gesture recognizers
+
+- detectTagGestures()
+- detectDragGestures()
+- detectVerticalDragGestures()
+- detectHorizontalDragGestures()
+- detectDragGesturesAfterLongPress()
+- detectTransformGestures() - multi touch gestures - pinch, zoom, rotate
+
+Gesture modifiers
+
+- Modifier.clickable {} - just tap gesture
+- Modifier.combinedClickable( onClick = .., onLongClick = ..., onDoubleClick = ... )
+- Modifier.draggable(_) to detect horizontal and vertical drag gestures
+- Modifier.scrollable() = includes logic for scrolling and flinging
+- Modifier.transformable() = multi touch gestures.
+
+How do we choose between recognizers and modifiers? = modifiers unlike recognizers does more than
+just detecting gestures. In source code of modifier.clickable, it adds support for accessibility,
+keyboard support, indication (to show ripples). In general, always use gesture modifiers and use
+gesture recognizers only if there are good reasons to use.
+
+Jetpack Compose provides different levels of abstraction for handling gestures. On the top level is
+component support. Composables like Button automatically include gesture support. To add gesture
+support to custom components, you can add gesture modifiers like clickable to arbitrary composables.
+Finally, if you need a custom gesture, you can use the pointerInput modifier.
+
+As a rule, build on the highest level of abstraction that offers the functionality you need. This
+way, you benefit from the best practices included in the layer. For example, Button contains more
+semantic information, used for accessibility, than clickable, which contains more information than a
+raw pointerInput implementation. When it fits your use case, prefer gestures included in components,
+as they include out-of-the-box support for focus and accessibility, and they are well-tested
+
+There are many modifiers to handle different types of gestures:
+
+- Handle taps and presses with the clickable, combinedClickable, selectable , toggleable, and
+  triStateToggleable modifiers.
+- Handle scrolling with the horizontalScroll, verticalScroll, and more generic scrollable modifiers.
+- Handle dragging with the draggable and swipeable modifier.
+- Handle multi-touch gestures such as panning, rotating, and zooming, with the transformable
+  modifier.
+
+Link to detailed documentation and
+video [Check](https://developer.android.com/develop/ui/compose/touch-input/pointer-input/understand-gestures)
+
+### Q52. When to use sealed interface/class?
+
+`Sealed class` is used when you want to define a closed type hierarchy where all subclasses are
+known
+at compile time.
+
+- You need to represent a closed set of types. All subclasses of a sealed class must be declared in
+  the same file or package. This ensures that the hierarchy is exhaustive and cannot be extended
+  outside the file or module. This makes when expressions exhaustive.
+- You need state or properties. Sealed classes can have properties, constructors and state, making
+  them ideal for modeling data with shared behavior or attributes.
+- You want to enforce a specific structure: Sealed classes are often in scenarios like representing
+  states e.g Loading, Success and Error or expressions e.g Add or Subtract.
+
+```kotlin
+sealed class Result<T : Any> {
+    data class Success<T : Any>(val data: T) : Result<T>()
+    data class Error<T : Any>(val error: String, val data: T? = null) : Result<T>()
+    data object Loading : Result<T>()
+}
+```
+
+`Sealed interface` is used when you want to define a closed set of types that implement a common
+interface. It is useful when
+
+- You want to define a contract. Sealed interfaces are ideal for defining a common API or behavior
+  that multiple types can implement, while restricting the set of implementers.
+- You need multiple inheritance. Unlike sealed classes, a type can implement multiple sealed
+  interfaces, allowing for more flexible hierarchies.
+- You want to avoid state or properties. Interfaces cannot hold state, so if you only need to define
+  behavior or contracts, a sealed interface is a better choice.
+- You want to enforce a closed set of implementers. Like sealed classes, interfaces restrict the set
+  of implementers to those declared in the same file or module
+
+Sealed class:
+
+1. Can have state and properties
+2. single inheritance (kotlin classes)
+3. modeling data with shared state
+
+Sealed interfaces:
+
+1. Cannot have state or properties
+2. multiple inheritance
+3. defining contracts or behavior
+
+Classes and interfaces in Kotlin are not only used to represent a set of operations or data; we can
+also use classes and inheritance to present hierarchies through polymorphism. You can model a
+network response using the following ways
+
+```kotlin
+//interface
+interface Response
+class Success(val data: String) : Response
+class Failure(val exception: Throwable) : Response
+
+//or using an abstract class
+abstract class Response
+class Success(val data: String) : Response
+class Failure(val exception: Throwable) : Response
+
+val result: Reponse = getSomeData()
+when (result) {
+    is Success -> handleSuccess(result.data)
+    is Failure -> handleFailure(result.exception)
+    else -> {} //This is required in case of interface and abstract class 
+}
+```
+
+`The problem is that when a regular interface or abstract class is used, there is no guarantee that its defined subclasses are all possible subtypes of this interface or abstract class.`
+Someone might define another class and make it implement Response. Someone might also implement an
+object expression that implements Response.
+
+A hierarchy whose subclasses are not known in advance is known as a non-restricted hierarchy. For
+Response, we prefer to define a restricted hierarchy which we can do by using a sealed modifier
+before a class or an interface.
+
+When we use the `sealed` modifier before a class, it makes this class abstract already, so we don't
+use the abstract modifier.
+
+Few requirements for sealed classes:
+
+- They need to be defined in the same package and module where the sealed class or interface is,
+- They can't be local or defined using object expression
+
+This means that when you use the sealed modifier, you control which subclasses a class or interface
+has. The users of your library or module cannot add their own direct subclasses, thus making the
+hierarchy of subclasses restricted.
+
+[Read more](https://kt.academy/article/kfde-sealed)
+
+Enum vs Sealed : Enum classes are used to represent a set of values. Sealed classes or interfaces
+represent a set of subtypes that can be made with classes or object declarations. This is a
+significant difference. A class is more than a value. It can have many instances and can be a data
+holder.
+Think of Response, if it were an enum class, it couldn't hold value or error. Sealed subclasses can
+each store different data, whereas an enum is just a set of values.
+
+```kotlin
+//Sealed class use cases
+
+sealed class MathOperation
+class Plus(val left: Int, val right: Int) : MathOperation()
+class Minus(val left: Int, val right: Int) : MathOperation()
+class Times(val left: Int, val right: Int) : MathOperation()
+class Divide(val left: Int, val right: Int) : MathOperation()
+
+sealed interface Tree
+class Leaf(val value: Any?) : Tree
+class Node(val left: Tree, val right: Tree) : Tree
+
+sealed interface Either<out L, out R>
+class Left<out L>(val value: L) : Either<L, Nothing>
+class Right<out R>(val value: R) : Either<Nothing, R>
+
+sealed interface AdView
+object FacebookAd : AdView
+object GoogleAd : AdView
+class OwnAd(val text: String, val imgUrl: String) : AdView
+```
+
+### Q53. in and out keyword in generics of Kotlin
+
+Checkout `VarianceInKotlin.kt` and `Animals.kt` file in this project for the example.
+
+Good to know:: All parameter types in Kotlin function types are contravariant, as the name of the in
+variance modifier suggests. All return types in Kotlin function types are covariant, as the name of
+the out variance modifier suggests.
+
+in-positions = used as a parameter type.
+
+Covariance (out modifier) is perfectly safe with public out-positions, therefore these positions are
+not limited. This is why we use covariance (out modifier) for types that are produced or only
+exposed, and the out modifier is often used for producers or immutable data holders. Thus, List has
+the covariant type parameter, but MutableList must have the invariant type parameter.
+
+Out-positions do not get along with contravariant type parameters (in modifier). If Producer type
+parameters were contravariant, we could up-cast Producer<Amphibious> to Producer<Nothing> and then
+expect produce to produce literally anything, which this method cannot do. That is why contravariant
+type parameters cannot be used in public out-positions.
+You cannot use contravariant type parameters (in modifier) in public out-positions, such as a
+function result or a read-only property type.
+
+```kotlin
+class Box<in T>(
+    val value: T // Compilation Error
+) {
+
+    fun get(): T = value // Compilation Error
+        ?: error("Value not set")
+}
+
+//it is fine when these elements are private
+class Box2<in T>(
+    private val value: T
+) {
+
+    private fun get(): T = value
+        ?: error("Value not set")
+}
+
+public interface Continuation<in T> {
+    public val context: CoroutineContext
+    public fun resumeWith(result: Result<T>)
+}
+```
+
+This way, we use contravariance (in modifier) for type
+parameters that are only consumed or accepted. A well-known example is
+kotlin.coroutines.Continuation:
+
+Read-write property types are invariant, so public read-write properties support neither covariant
+nor contravariant types.
+
+Every Kotlin type parameter has some variance:
+
+- The default variance behavior of a type parameter is invariance. If, in Box<T>, type parameter T
+  is invariant and A is a subtype of B, then there is no relation between Box<A> and Box<B>.
+- The out modifier makes a type parameter covariant. If, in Box<T>, type parameter T is covariant
+  and A is a subtype of B, then Box<A> is a subtype of Box<B>. Covariant types can be used in public
+  out-positions.
+- The in modifier makes a type parameter contravariant. If, in Box<T>, type parameter T is
+  contravariant and A is a subtype of B, then Cup is a subtype of Cup. Contravariant types can be
+  used in public in-positions.
+
+In Kotlin, it is also good to know that:
+
+- Type parameters of List and Set are covariant (out modifier). So, for instance, we can pass any
+  list where List<Any> is expected. Also, the type parameter representing the value type in Map is
+  covariant (out modifier). Type parameters of Array, MutableList, MutableSet, and MutableMap are
+  invariant (no variance modifier).
+- In function types, parameter types are contravariant (in modifier), and the return type is
+  covariant (out modifier).
+- We use covariance (out modifier) for types that are only returned (produced or exposed).
+- We use contravariance (in modifier) for types that are only accepted (consumed or set).
+
+1: This is also called mixed-site variance.
+
+[Read more on variance in Kotlin](https://kt.academy/article/ak-variance)
+[Variance limitations](https://kt.academy/article/ak-variance-limitations)
+
+### Q54.
+
 ### What is a type-safe navigation in compose navigation?
 
 ### Q How would you pass an intent from one app to another app?
@@ -1589,5 +1844,26 @@ Resource [Watch](https://youtube.com/watch?v=MiLN2vs2Oe0)
 
 ### Q Jetpack compose and implement login using Fingerprint?
 
+### helpful key shortcuts in Android studio for increasing productivity
 
+- Ctrl+Alt+T - Surround expression with
+- Ctrl+shift+backspace - last edited place
+- Ctrl+V --> Ctrl+shift+V = paste / paste history clipboard
+- Ctrl + backspace , ctrl + delete - backward /forward deleting
+- ctrl + shift + U -> capital or not,
+- alt+ctrl+l -format code
+- ctrl + e -> recently opened /used files
+- alt+inert -> generate auto methods
+- ctrl + q -> see documentation,
+- ctrl + p -> params of function,
+- ctrl + b -> jump to def
+- alt + f1 -> quickly open current file in file tree
+- ctrl + d -> next occurrence to skip and move next F3
+
+#other important settings to optimize and remove cache
+org.gradle.configureondemand=true
+org.gradle.daemon=true
+org.gradle.caching=true
+kotlin.incremental=true
+org.gradle.configuration-cache.parallel=true
 
