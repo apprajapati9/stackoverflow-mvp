@@ -355,6 +355,69 @@ SingleTask :
   launch activity C, the state of the stack will be A->B->C. Here activity C is the old instance
   only that gets the extras data through onNewIntent(). And Activities D and E get destroyed.
 
+That’s a common symptom of not understanding Android’s launch modes — and it can seriously mess up
+your user flow.
+
+Let’s break them down with real-world relevance 👇
+
+💡 First, What is a Task?
+In Android, a task is a stack of activities that users interact with while performing a certain job.
+
+🧠 Think of it like a tab in Chrome —
+Each task has its own activity stack. Hitting the back button pops the current activity from that
+stack.
+
+🟢 1. standard – The Default Mode
+✅ A new instance is always created, even if one already exists.
+
+🧭 Best for: Screens like product pages, forms, or anything that can exist multiple times.
+android:launchMode="standard"
+
+Example: User taps the same notification twice → 2 activity instances on the stack.
+
+🟡 2. singleTop – Avoid Duplicates on Top
+✅ If the activity is already at the top, no new instance is created.
+✅ Instead, onNewIntent() is called.
+
+🧭 Best for: Notifications, deep links, or repeated navigation to the same screen.
+android:launchMode="singleTop"
+
+Example: You’re already on Home → Tap the Home notification → Same instance reused.
+
+🔵 3. singleTask – One Instance Per Task
+✅ If the activity exists in the task, it’s brought to the front.
+🚨 All activities above it are cleared.
+
+🧭 Best for: Dashboards, main entry points, login redirects.
+android:launchMode="singleTask"
+
+Example: Login → Profile → Dashboard
+Tap a dashboard notification → Clears login and profile, shows only dashboard.
+
+🔴 4. singleInstance – Lives in Its Own Task
+✅ Only one instance exists, in a separate task.
+
+🧭 Best for: Use cases like incoming calls or PiP where isolation is needed.
+android:launchMode="singleInstance"
+
+Think: It opens in its own private Chrome tab — no other screens allowed in that tab.
+
+⚠️ In Jetpack Compose Apps
+Most modern apps use a single-activity architecture, so launch modes primarily matter for:
+✅ Preventing duplicate launches (from notifications or deep links)
+✅ Managing app resume behavior
+
+In addition to using launch modes, you can also augment or override behavior at runtime using intent
+flags like FLAG_ACTIVITY_NEW_TASK, FLAG_ACTIVITY_CLEAR_TOP, etc.
+
+👉 No need to set launch modes unless you have a specific use case (like preventing duplicate
+activity instances from notifications or deep links). For many apps, the default standard launch
+mode works perfectly fine.
+
+💬 Final Tip
+If you’re seeing weird back stack behavior, check your launch modes. Misusing them can cause a messy
+UX — and frustrated users.
+
 ### Q15. What is Suspend vs Blocking functions?
 
 Suspend functions are the ones that do not block the thread and let it continue the execution.
@@ -571,8 +634,6 @@ Types
     - CoroutineExceptionHandler - used to handle uncaught exceptions in coroutines.
 
 ```kotlin
-    import kotlin.coroutines.CoroutineContext
-
 GlobalScope.launch(
     Dispatchers.IO +
             Job() +
@@ -837,7 +898,6 @@ println(list3)
 It is a shortcut operator for two operations. First `scope.launch` and then `collect`
 
 ```kotlin
-import kotlin.coroutines.EmptyCoroutineContext
 
 val scope = CoroutineScope(EmptyCoroutineContext)
 flow.launchIn(scope)
@@ -1048,14 +1108,14 @@ lifecycleScope.launch {
 ```kotlin
 // #2 - inactive on cancellation
 fun coldFlow() = flow {
-        emit(1)
-        delay(1000)
+    emit(1)
+    delay(1000)
 
-        emit(2)
-        delay(1000)
+    emit(2)
+    delay(1000)
 
-        emit(3)
-    }
+    emit(3)
+}
 
 suspend fun main(): Unit = coroutineScope {
     var job = launch {
@@ -1514,7 +1574,6 @@ sealed class Resource<T>(val data: T? = null, val message: String? = null) {
 Better way to map is following
 
 ```kotlin
-import javax.xml.validation.Validator
 
 sealed interface Error  //just an interface
 
@@ -1830,7 +1889,9 @@ In Kotlin, it is also good to know that:
 [Read more on variance in Kotlin](https://kt.academy/article/ak-variance)
 [Variance limitations](https://kt.academy/article/ak-variance-limitations)
 
-### Q54.
+### Q54. How to handle network check in Android?
+
+[Check internet connection](https://www.droidcon.com/2025/04/25/avoid-redundant-network-checks-in-android-smart-offline-aware-api-handling/)
 
 ### What is a type-safe navigation in compose navigation?
 

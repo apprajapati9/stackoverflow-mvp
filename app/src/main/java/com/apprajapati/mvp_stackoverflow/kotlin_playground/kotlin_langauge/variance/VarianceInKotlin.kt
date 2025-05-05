@@ -32,13 +32,17 @@ class Box2<out T> {
     fun get(): T = value ?: error("Value not set")
 }
 
-class Box3<in T> { // will prevent you from creating object with subtype. i.e reverse the relationship
+class Box3<in T> { // will prevent you from creating object with subtype. i.e reverse the relationship from OUT - subtype
 
     private var value: T? = null
 
     fun put(value: T) {
         this.value = value
     }
+}
+
+fun addToList(list: MutableList<in String>) {
+    list.add("Hello") // ✅ allowed
 }
 
 
@@ -78,7 +82,23 @@ fun main() {
     /*
     However, public in-positions cannot be used with covariance, including the out modifier. Just think what would happen if you could upcast Box<Dog> to Box<Any?>. If this were possible, you could literally pass any object to the put method. Can you see the implications of this? That is why it is prohibited in Kotlin to use a covariant type (out modifier) in public in-positions.
      */
+
+
+    val list = mutableListOf<Any>(1, "1", 1.1)
+    //val list = mutableListOf<Int>(1, 2, 3)
+    addToList(list) //accepts in T as String, which means  "I promise to only put values of type T or its subtypes into this thing. So you can give me a place that holds supertypes of T — like Any."
+    for (i in list) {
+        println(i)
+    }
 }
+
+/*
+in T: you're saying “I will only give you Ts.”
+→ So Kotlin allows T or any supertype (like Any) to be passed.
+
+out T: you're saying “I will only return Ts.”
+→ So Kotlin allows T or any subtype (like String) to be used safely.
+ */
 
 /*
 // Java
