@@ -1893,6 +1893,82 @@ In Kotlin, it is also good to know that:
 
 [Check internet connection](https://www.droidcon.com/2025/04/25/avoid-redundant-network-checks-in-android-smart-offline-aware-api-handling/)
 
+### Q55. Kotlin coroutine Q/A?
+
+If this article unavailable, there's a pdf version in this project - coroutine-questions.pdf
+[Questions on Coroutines](https://medium.com/@af2905g/kotlin-coroutines-interview-questions-youll-actually-get-asked-dac79ec3aa18)
+
+For examples check : LaunchVsAsync.kt
+
+### Q56. Type-safe navigation in Compose?
+
+These two video do explain really well what it is all about.
+
+Basically before we were using string literals to define args and route of composable in Compose;
+however now with type-safe nav, we can use class to model that route and serialize that so
+internally a data class or object will be converted to string and can easily be passed around with
+modelled data class instead of using strings which can be error prone.
+
+[Type-safe nav](https://www.youtube.com/watch?v=AIC_OFQ1r3k)
+[Custom Nav-types args in Type-safe nav](https://www.youtube.com/watch?v=qBxaZ071N0c)
+
+### Q57. Migration guide for XML to Jetpack compose?
+
+Things to remember :
+
+```kotlin
+//Enable compose using
+buildFeatures {
+    compose = true
+}
+```
+
+You can convert existing XML component/UI element to Compose by using ComposeView,
+`androidx.compose.ui.platform.ComposeView`. And in place of using that element, we can simply use
+reference of that XML widget (let's say Button) and call `.setContent{}` lambda which will allow us
+to place Composable functions to render newly created UI there.
+Important : composeView.setViewCompositionStrategy and attach it to lifecycle scope.
+
+The opposite can be done using `AndroidView`. In that, you have `factory` param that would give us
+context which is needed to inflate XML view, for example `TextView(context)`. `update` is another
+param that would give us the reference of textView to set different property of textview.
+
+```kotlin
+AndroidView(
+    factor = { context ->
+        TextView(context)
+    },
+    update = { textView ->
+        textView.text = HTMLCompat.fromHtml("description", HTMLCompat.FROM_HTML_MODE_COMPACT)
+    }
+
+)
+
+//For testing USE
+@Rule
+@JvmField
+val composeRule = createAndroidComposeRule<ActivityName>()
+
+private lateinit var activity: ComponentActivity
+
+// for normal other views that are still in xml
+composeRule.activityRule.scenario.onActivity { gardenActivity ->
+    activity = gardenActivity
+}
+
+//For textView test
+composeRule.onNodeWithText("Text").assertIsDisplayed()
+```
+
+[Sample Migration using ComposeView](https://youtube.com/watch?v=qYzhqFdUEQg)
+[Codelab from Google](https://youtube.com/watch?v=wg4NHmxJ78g)
+
+### Q58. Kotlin coroutine Q/A?
+
+### Q59. Kotlin coroutine Q/A?
+
+### Q60 . Kotlin coroutine Q/A?
+
 ### What is a type-safe navigation in compose navigation?
 
 ### Q How would you pass an intent from one app to another app?
