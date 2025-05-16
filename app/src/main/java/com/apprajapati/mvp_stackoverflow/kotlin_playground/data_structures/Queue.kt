@@ -9,6 +9,7 @@ interface Queue<T : Any> {
     fun dequeue(): T?
 }
 
+//FIFO - first in, first out
 class QueueImpl<T : Any> : Queue<T> {
 
     val storage = arrayListOf<T>()

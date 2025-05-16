@@ -1963,15 +1963,157 @@ composeRule.onNodeWithText("Text").assertIsDisplayed()
 [Sample Migration using ComposeView](https://youtube.com/watch?v=qYzhqFdUEQg)
 [Codelab from Google](https://youtube.com/watch?v=wg4NHmxJ78g)
 
-### Q58. Kotlin coroutine Q/A?
+### Q58. Job vs Scope?
 
-### Q59. Kotlin coroutine Q/A?
+[Resource](https://www.droidcon.com/2025/04/25/kotlin-coroutines-the-real-difference-between-job-cancel-and-scope-cancel/)
 
-### Q60 . Kotlin coroutine Q/A?
+### Q59. How to handle network status using Flows?
 
-### What is a type-safe navigation in compose navigation?
+[Resource](https://www.droidcon.com/2025/04/25/avoid-redundant-network-checks-in-android-smart-offline-aware-api-handling/)
 
-### Q How would you pass an intent from one app to another app?
+My implementation in my project
+
+```kotlin
+// # https://developer.android.com/kotlin/flow
+
+/*
+    Using cold callbackflow to listen and emitting initial value onStart{}.
+    Will trigger only when in that specific scope and collected and while collecting, update is triggered when value is changed than the default one after start collecting.
+    initial value is determined on onStart{}
+ */
+class NetworkListener(context: Context) : ConnectivityObserver {
+
+    private val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    override fun observe(): Flow<ConnectivityObserver.Status> {
+        return callbackFlow {
+            val callback = object : ConnectivityManager.NetworkCallback() {
+
+                override fun onAvailable(network: Network) {
+                    super.onAvailable(network)
+                    launch {
+                        send(ConnectivityObserver.Status.Available)
+                    }
+                }
+
+                override fun onLost(network: Network) {
+                    super.onLost(network)
+                    launch {
+                        send(ConnectivityObserver.Status.Lost)
+                    }
+                }
+
+                override fun onUnavailable() {
+                    super.onUnavailable()
+                    launch {
+                        send(ConnectivityObserver.Status.Unavailable)
+                    }
+                }
+
+                override fun onLosing(network: Network, maxMsToLive: Int) {
+                    super.onLosing(network, maxMsToLive)
+                    launch {
+                        send(ConnectivityObserver.Status.Losing)
+                    }
+                }
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                connectivityManager.registerDefaultNetworkCallback(callback)
+            } else {
+                val networkRequest = NetworkRequest.Builder()
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                    .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                    .build()
+                connectivityManager.registerNetworkCallback(networkRequest, callback)
+            }
+
+            awaitClose {
+                connectivityManager.unregisterNetworkCallback(callback)
+            }
+
+        }.onStart {
+
+            /*
+
+            you can either use trysend(value) (channel) or onStart to emit cold flow initial value.
+            //Trysend - non suspending function, send - suspending function thus needed to be called in launch scope
+
+            trySend: Non-suspending, returns a ChannelResult for success/failure, and doesn’t throw exceptions. Best for non-blocking, failure-tolerant emissions.
+            send: Suspending, throws exceptions on failure, and waits if the channel buffer is full. Best for cases where successful emission is critical, even if it suspends the coroutine.
+
+             */
+
+            if (isConnected()) {
+                emit(ConnectivityObserver.Status.Available)
+            } else {
+                emit(ConnectivityObserver.Status.Unavailable)
+            }
+        }.distinctUntilChanged() // only updates when change in emission
+    }
+
+    private fun isConnected(): Boolean {
+        val activeNetwork = connectivityManager.activeNetwork
+        return activeNetwork != null &&
+                connectivityManager.getNetworkCapabilities(activeNetwork)
+                    ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    }
+}
+
+
+interface ConnectivityObserver {
+
+    fun observe(): Flow<Status>
+    enum class Status {
+        Available, Unavailable, Losing, Lost
+    }
+}
+```
+
+### Q60 . How does Work Manager work?
+
+[Codelab](https://developer.android.com/codelabs/basic-android-kotlin-compose-workmanager#3)
+[When to use service vs Work Manager](https://medium.com/@appdevinsights/when-to-use-service-and-when-to-use-workmanager-9760613ce5c2)
+
+### Q61. How Kotlin delegation works?
+
+Checkout `DelegatedProperty.kt` for an example in this project.
+[Resource](https://youtube.com/watch?v=MfJB-JhRAoQ)
+
+Delegation Type || Use Case Example
+===================================
+Class Delegation || Code reuse without inheritance (e.g., wrappers, logging, test stubs)
+Lazy Delegation || Load config/data only when needed
+Observable || UI update triggers, state watching
+Custom Delegates || Validation, caching, property access logic
+
+### Q62. How do you test composables ?
+
+- Use `createAndroidComposeRule<YourActivity>()` with JUnit4
+- onNodeWithText() , onNodeWithTag()
+- assertExists, performClick
+
+```kotlin
+composeTestRule.onNodeWithText("ajay").performClick().assertIsDisplayed()
+```
+
+### Q63. How Kotlin delegation works?
+
+### Q64. How Kotlin delegation works?
+
+### Q65. How Kotlin delegation works?
+
+### Q66. How Kotlin delegation works?
+
+### Q67. How Kotlin delegation works?
+
+### Q68. How Kotlin delegation works?
+
+### Q69. How Kotlin delegation works?
+
+### How would you pass an intent from one app to another app?
 
 ### Q What is Mutex and what is the use case of that?
 
@@ -1996,6 +2138,9 @@ composeRule.onNodeWithText("Text").assertIsDisplayed()
 - ctrl + b -> jump to def
 - alt + f1 -> quickly open current file in file tree
 - ctrl + d -> next occurrence to skip and move next F3
+- alt + ctrl + left/right -> go back in file navigation system when jumping around code
+-
+-
 
 #other important settings to optimize and remove cache
 org.gradle.configureondemand=true
@@ -2004,3 +2149,4 @@ org.gradle.caching=true
 kotlin.incremental=true
 org.gradle.configuration-cache.parallel=true
 
+https://jsonplaceholder.typicode.com/posts => Test fake api available json

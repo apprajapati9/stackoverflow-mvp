@@ -42,15 +42,22 @@ class Resource {
     fun useResource() = "Using resource $resource"
 }
 
+fun setValueHere(user: User) {
+    user.name = "change here, will it reflect there?"
+}
+
 fun main() {
     val e = Example()
     println(e.p)
     e.p = "ajay"
-    
+
     //This is to demonstrate observable delegation
     val user = User()
     user.name = "first"
     user.name = "second"
+
+    setValueHere(user)
+    setValueHere(user)
 
     val user2 = User2(
         mapOf(

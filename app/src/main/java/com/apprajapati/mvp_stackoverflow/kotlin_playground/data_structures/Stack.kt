@@ -8,6 +8,7 @@ interface Stack<T : Any> {
     val isEmpty: Boolean get() = count == 0
 }
 
+//LIFO - Last in, first out
 class StackImpl<T : Any> : Stack<T> {
 
     val stack = arrayListOf<T>()
