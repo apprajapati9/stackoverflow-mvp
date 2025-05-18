@@ -33,6 +33,10 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_20.toString()
     }
+
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {

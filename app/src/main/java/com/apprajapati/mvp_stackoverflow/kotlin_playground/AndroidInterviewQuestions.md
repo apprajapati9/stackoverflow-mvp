@@ -2099,19 +2099,879 @@ Custom Delegates || Validation, caching, property access logic
 composeTestRule.onNodeWithText("ajay").performClick().assertIsDisplayed()
 ```
 
-### Q63. How Kotlin delegation works?
+### Q63. How to build a data layer with multiple sources with tests?
 
-### Q64. How Kotlin delegation works?
+[Resource](https://youtube.com/watch?v=P125nWICYps)
 
-### Q65. How Kotlin delegation works?
+### Q64. Accessibility in Jetpack compose?
 
-### Q66. How Kotlin delegation works?
+This allows us to develop applications that are inclusive to all users with different disabilities
+i.e cognitive, visual or motor impairments.
 
-### Q67. How Kotlin delegation works?
+Most useful is `contentDescription`, it allows screen readers to read out loud for images, icons
+and other visual elements.
 
-### Q68. How Kotlin delegation works?
+```kotlin
+Text(
+    text = "Play",
+    modifier = Modifier
+        .semantics {
+            contentDescription =
+                "Start playing the media"
+        }
+)
+```
 
-### Q69. How Kotlin delegation works?
+1. `Modifier.semantics` this modifier allows us to place custom content description for buttons and
+   check boxes, The Modifier.semantics function allows developers to define custom roles, states,
+   and actions for UI elements
+2. `Modifier.focusable()` allows composable element to be focusable when not using touch screen.
+3. You can control the focus behavior using the `Modifier.focusRequester()`
+   to programmatically set focus to a particular component when necessary.
+
+    ```kotlin
+        val focusRequester = FocusRequester()
+        TextField(
+            value = textState,
+            onValueChange = { textState = it },
+            modifier = Modifier.focusRequester(focusRequester)
+        )
+        // Focus on the TextField programmatically
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
+    ```
+
+### Q65. Unit testing in Jetpack Compose?
+
+To effectively test Jetpack Compose UI, we use `ComposeTestRule` , which provides
+the necessary environment to launch composables and interact with them in
+tests. This rule helps in setting up, executing, and cleaning up UI tests.
+
+```kotlin
+//Simple test 
+@get:Rule
+val composeTestRule = createComposeRule()
+
+/*
+    createComposeRule require libararies 
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:<version>")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:<version>")
+ */
+@Test
+fun testButtonClick() {
+    composeTestRule.setContent {
+        MyComposable() // Set the Composable you want to test
+    }
+// Perform actions and assertions
+    composeTestRule.onNodeWithText("Click Me").performClick() //Finds UI element by text and clicks
+    composeTestRule.onNodeWithText("Clicked!").assertExists() //checks if exists
+}
+
+// Setting a Test Tag in a Composable, to make it easier to find elements in Compose instead of texts
+Text(
+    text =
+        "Hello",
+    modifier = Modifier.testTag("greetingText")
+)
+// Finding a Node by Test Tag
+composeTestRule.onNodeWithTag("greetingText").assertIsDisplayed()
+
+//This is useful for accessibility test
+composeTestRule.onNodeWithContentDescription("Profile Image").assertIsDisplayed()
+
+//inputs text and checks if it works
+composeTestRule.onNodeWithTag("inputField").performTextInput("Hello")
+composeTestRule.onNodeWithTag("inputField").assertTextEquals("Hello")
+
+//scrolling in Lazy column
+composeTestRule.onNodeWithTag("lazyList")
+    .performScrollToNode(hasText("Item 50"))
+
+//Use this command to run tests -> ./gradlew connectedAndroidTest
+
+// ---- Use Mockito for more control and create fake repositories and avoid passing view models.
+// Adding Mockito Dependency
+//testImplementation("org.mockito:mockito-core:4.x")
+//testImplementation("org.mockito.kotlin:mockito-kotlin:4.x")
+// Mocking Repository with Mockito
+val mockRepository = mock<UserRepository>()
+whenever(mockRepository.getUser()).thenReturn(flowOf(User("Mock User")))
+val viewModel = UserViewModel(mockRepository)
+```
+
+`setContent {}` - Sets the Compose UI for testing.
+`onNodeWithText("text")` - Finds a UI node by its text.
+`onNodeWithTag("tag")` - Finds a UI node using a test tag.
+`performClick()` - Simulates a click event.
+`assertExists()` - Ensures the UI element is present.
+`assertIsDisplayed()` - Verifies that a UI component is visible.
+`assertTextEquals("Text")` - Verifies the displayed text.
+`assertIsEnabled()` - Ensures a button or input is enabled.
+`assertIsNotEnabled()` - Ensures a button is disabled.
+
+```kotlin
+// Modify the fake repository:
+class FakeLoadingUserRepository : UserRepository {
+    override fun getUser(): Flow<User> = flow {
+        delay(2000) // Simulate loading delay
+        emit(User("Loaded User"))
+    }
+}
+
+// Testing UI Behavior During Loading
+@Test
+fun testLoadingState() {
+    val fakeRepository = FakeLoadingUserRepository()
+    val viewModel = UserViewModel(fakeRepository)
+    composeTestRule.setContent {
+        UserProfileScreen(viewModel)
+    }
+// Verify "Loading..." text is displayed initially
+    composeTestRule.onNodeWithText("Loading...").assertExists()
+}
+
+//If using Hilt, provide fake dependencies in tests. 
+// Define a Fake Repository Module
+@Module
+@TestInstallIn(
+    components = [SingletonComponent::class],
+    replaces = [UserRepositoryModule::class] // Replace real repository
+)
+object FakeUserRepositoryModule {
+    @Provides
+    fun provideFakeUserRepository(): UserRepository = FakeUserRepository()
+}
+```
+
+### Q66. What is `LocalConfiguration`?
+
+Detecting Orientation Changes with `LocalConfiguration`
+
+Problem: Sometimes, you need to adjust the layout based on the orientation
+(portrait or landscape). Jetpack Compose provides LocalConfiguration to
+access the current configuration of the device.
+
+Solution: Use LocalConfiguration to detect the device's orientation and modify
+the UI layout accordingly.
+
+```kotlin
+@Composable
+fun OrientationAwareLayout() {
+    val configuration = LocalConfiguration.current
+    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        // Layout for landscape orientation
+        Row {
+            Text("Landscape Mode")
+            // Add more landscape-specific content
+        }
+    } else {
+        // Layout for portrait orientation
+        Column {
+            Text("Portrait Mode")
+            // Add more portrait-specific content
+        }
+    }
+}
+```
+
+- Problem: Excessive recompositions can harm performance, especially if you
+  are dealing with complex layouts or expensive calculations.
+- Solution: Use remember and `rememberSaveable` to prevent unnecessary
+  recomposition when the orientation changes. Avoid reinitializing variables
+  unnecessarily.
+
+```kotlin
+@Composable
+fun RememberExample() {
+    val data = remember { fetchDataFromApi() } // This will not be recomposed on orientation change
+    Text(text = data)
+}
+```
+
+```kotlin
+@Composable
+fun MultiConfigLayout() {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isTablet = configuration.screenWidthDp > 600
+    when {
+        isLandscape && isTablet -> {
+            // Layout for landscape on large screens
+            Row {
+                // More content for large screens
+            }
+        }
+        isLandscape -> {
+            // Layout for landscape on small screens
+            Row {
+                // Adjust content
+            }
+        }
+        else -> {
+            // Layout for portrait
+            Column {
+                // Adjust content for portrait
+            }
+        }
+    }
+}
+```
+
+Here are some questions that can be asked in an interview about this topic:
+
+1. What is `rememberSaveable` in Jetpack Compose? `rememberSaveable` is used to
+   preserve simple state across configuration changes like orientation changes.
+2. How do you handle complex state preservation during orientation changes
+   in Jetpack Compose? Complex state can be managed using ViewModel , which
+   survives configuration changes and stores app-specific data.
+3. What is LocalConfiguration used for in Jetpack Compose? LocalConfiguration
+   provides access to the current device configuration, including orientation, screen
+   size, and locale.
+4. How can you create responsive layouts for different screen orientations in
+   Jetpack Compose? Use LocalConfiguration to detect the orientation and switch
+   between layouts (e.g., Row for landscape, Column for portrait).
+5. How do you optimize layout performance during orientation changes in
+   Jetpack Compose? Use `rememberSaveable` and remember to prevent unnecessary
+   recompositions and avoid reinitializing variables on orientation change.
+6. What are the best practices for handling orientation changes in Jetpack
+   Compose? Best practices include using `rememberSaveable` for state preservation,
+   ViewModel for complex state, and adapting layouts with LocalConfiguration .
+7. Can you detect if the device is in landscape or portrait mode in Jetpack
+   Compose? Yes, by using LocalConfiguration.current.orientation , you can detect
+   and handle landscape or portrait modes accordingly.
+8. What layout components would you use to adapt to orientation changes in
+   Jetpack Compose? Use Column , Row , LazyColumn , LazyRow , or ConstraintLayout
+   to create responsive layouts that adjust based on orientation.
+9. How do you ensure UI components are not recreated unnecessarily during
+   orientation changes? Use remember to cache UI components and `rememberSaveable`
+   to preserve simple state, preventing unnecessary recomposition.
+10. What should you consider when handling orientation changes on large
+    screens like tablets? On large screens, consider using a multi-column layout, like
+    Row or Grid , to better utilize the available screen space.
+
+### Q67. What is `CompositionLocal`?
+
+CompositionLocal in Jetpack Compose is a powerful mechanism for managing and
+sharing data within a composable hierarchy without the need to explicitly pass
+data through each level of the UI tree. It simplifies the handling of global or
+shared data, such as themes, configurations, or user settings, across deeply
+nested composables. Instead of passing data as parameters down the composable
+tree, CompositionLocal provides a way to inject this data into the composition,
+making it available to any composable within its scope. This approach helps
+reduce boilerplate code, making the codebase cleaner and easier to maintain.
+
+```kotlin
+//Here's how you define 
+val LocalExample = compositionLocalOf { "Default Value" }
+
+/*
+Providing a Value: The value for a CompositionLocal is provided using the
+CompositionLocalProvider . This creates a scope within which composables can
+access the provided value. If no value is provided, the composables fall back
+to the default value defined in the compositionLocalOf .
+
+ */
+CompositionLocalProvider(LocalExample provides "New Value") {
+    // Composables here can access LocalExample's value as "New Value"
+}
+
+//Use as follows to access the value
+Text(text = LocalExample.current)  // Will also display the default value if not provided
+```
+
+In summary, CompositionLocal works by defining a piece of data that can be
+injected into a composable tree, providing flexibility for managing shared or
+global data across different parts of your UI. By using CompositionLocal , you can
+reduce the need for passing data down multiple layers of composables, making
+your code more efficient and easier to maintain.
+
+Example, setting a color
+
+```kotlin
+val LocalThemeColor = compositionLocalOf { Color.Gray }
+
+//Next, we use CompositionLocalProvider to provide a specific value to the LocalThemeColor within a part of our composable hierarchy.
+@Composable
+fun ThemeExample() {
+// Provide a custom theme color
+    CompositionLocalProvider(LocalThemeColor provides Color.Blue) {
+// The value of LocalThemeColor here will be Blue
+        Surface {
+            ThemedText()
+        }
+    }
+}
+
+@Composable
+fun ThemedText() {
+// Access the current theme color
+    Text(
+        text =
+            "This is a themed text!",
+        color = LocalThemeColor.current
+    )
+}
+
+@Preview
+@Composable
+fun PreviewThemeExample() {
+    ThemeExample() // This will display the text with a blue color
+}
+
+```
+
+CompositionLocal in Jetpack Compose is useful for managing global or shared data
+within a composable hierarchy. Here are some of the most common use cases for
+CompositionLocal.
+
+1. One of the most common use cases for CompositionLocal is
+   theming. By using CompositionLocal , you can inject theme-related data (such as colors,
+   typography, and shapes) into your composables without passing them explicitly through each
+   composable.
+2. Another common use case is managing language and region settings for your
+   app. You can store and provide the current locale or language preference using
+   CompositionLocal , allowing composables to adjust text and content accordingly
+   without prop drilling.
+   ```kotlin
+
+    val LocalLanguage = compositionLocalOf { "en" }
+    @Composable
+    fun GreetingMessage() {
+        val language = LocalLanguage.current
+            Text(text = if (language =="en") "Hello!" else "Hola!")
+        }
+    
+   @Composable
+    fun AppWithLanguage() {
+        CompositionLocalProvider(LocalLanguage provides "es") {
+            GreetingMessage() // Displays "Hola!" because language is set to Spanish
+        }
+   }
+    ```      
+3. You can use CompositionLocal to manage user preferences or settings across
+   different parts of your application. For instance, things like user authentication
+   status, user themes, or app configuration settings can be handled through
+   CompositionLocal .
+
+    ```kotlin
+    val LocalUserTheme = compositionLocalOf { "light" }
+    
+    @Composable
+    fun ThemedContent() {
+        val theme = LocalUserTheme.current
+        if (theme ==
+            "light"
+        ) {
+    // Apply light theme UI elements
+            Text("This is light mode")
+        } else {
+    // Apply dark theme UI elements
+            Text("This is dark mode")
+        }
+    }
+    
+    @Composable
+    fun UserThemeSwitcher() {
+        CompositionLocalProvider(LocalUserTheme provides "dark") {
+            ThemedContent() // Displays "This is dark mode" because theme is set to dark
+        }
+    }
+    ```
+
+4. CompositionLocal can be used to provide configurations or injected dependencies
+   across the composables without using a complex dependency injection
+   framework. It helps centralize the management of things like API clients,
+   configuration settings, or data repositories.
+
+    ```kotlin
+      val LocalApiClient = compositionLocalOf { ApiClient() }
+    
+    @Composable
+    fun FetchData() {
+        val apiClient = LocalApiClient.current
+        val data = apiClient.getData() // Use the injected API client to fetch data
+        Text(text = data)
+    }
+    
+    @Composable
+    fun AppWithApiClient() {
+        CompositionLocalProvider(LocalApiClient provides ApiClient()) {
+            FetchData() // Will use the provided ApiClient to fetch data
+        }
+    }
+    
+    ```
+
+===================
+
+1. What is CompositionLocal in Jetpack Compose? CompositionLocal is a mechanism
+   in Jetpack Compose for passing data down the composition tree without explicitly
+   passing it through composable functions.
+2. Why would you use CompositionLocal in Jetpack Compose? It allows you to
+   share global data, such as themes or configurations, across composables without the
+   need for prop drilling.
+3. How do you define a CompositionLocal ? You define a CompositionLocal using the
+   `compositionLocalOf` function, specifying a default value.
+4. How do you provide a value to a CompositionLocal ? You provide a value using
+   CompositionLocalProvider , wrapping the composables that need access to that value.
+5. How do you access the current value of a CompositionLocal ? You access it using
+   `CompositionLocal.current` within a composable.
+6. Can you explain the fallback behavior of CompositionLocal ? If no value is
+   provided within a specific scope, the CompositionLocal will fallback to its default
+   value.
+7. What is the typical use case for CompositionLocal in Jetpack Compose? It is
+   commonly used for managing theme data, localization settings, and user
+   preferences that need to be shared across the composable hierarchy.
+8. How does CompositionLocal differ from passing data directly between
+   composables? CompositionLocal eliminates the need for prop drilling by providing
+   a way to inject shared data globally, without passing it explicitly through every
+   level of the composable tree.
+9. Can CompositionLocal be used for state management in Jetpack Compose?
+   While CompositionLocal can hold values, it is not meant for reactive state
+   management; it's better suited for passing context data like themes or
+   configurations.
+10. What happens if you access a CompositionLocal outside of its provider? If you
+    access a CompositionLocal outside its provider, it will return the default value
+    defined when it was created.
+
+### Q71. Pagination in Jetpack compose?
+
+1. What is pagination in Jetpack Compose? Pagination in Jetpack Compose is a
+   technique used to load and display data in chunks to efficiently manage large
+   datasets in lists.
+2. How do you implement pagination in Jetpack Compose? Pagination can be
+   implemented using LazyColumn with a ViewModel to manage data loading as the
+   user scrolls.
+3. What is the purpose of LazyColumn in pagination? LazyColumn allows efficient
+   rendering of only visible items, which helps with smooth pagination in large
+   datasets.
+4. How can you detect when the user has reached the end of the list in Jetpack
+   Compose? You can use `rememberLazyListState` and check the firstVisibleItemIndex
+   to trigger pagination when the user scrolls to the end.
+5. What is rememberLazyListState used for? `rememberLazyListState` is used to keep
+   track of the scroll position of a LazyColumn to manage pagination and detect when
+   more data should be loaded.
+6. What is the role of a ViewModel in pagination? A ViewModel is responsible for
+   fetching data in pages, storing it, and managing loading states during pagination.
+7. How do you handle loading indicators in pagination? You can manage a
+   loading state variable to show a spinner or other indicators when data is being
+   fetched.
+8. What is a common performance issue when implementing pagination and
+   how to avoid it? Frequent unnecessary data fetching can occur, which can be
+   avoided by debouncing scroll events and caching already loaded data.
+9. How do you implement infinite scrolling in Jetpack Compose? Infinite
+   scrolling can be achieved by triggering the loading of new data when the user scrolls
+   to the bottom of the list in LazyColumn .
+10. How can you prevent pagination from loading data multiple times? By using
+    a loading state flag to prevent multiple simultaneous data fetch requests when new
+    data is being loaded.
+
+```kotlin
+@Composable
+fun PaginatedListWithScroll(viewModel: MyViewModel = viewModel()) {
+    val items = viewModel.items.value
+    val listState = rememberLazyListState()
+    LazyColumn(
+        state = listState,
+        contentPadding = PaddingValues(16.dp)
+    ) {
+        items(items) { item ->
+            Text(item.name, style = MaterialTheme.typography.body1)
+        }
+// Check if the user has scrolled to the bottom of the list
+        if (listState.firstVisibleItemIndex == items.size - 1) {
+            viewModel.loadMoreItems() // Trigger loading more items
+        }
+    }
+}
+
+//ViewModel
+class MyViewModel : ViewModel() {
+    private val _items = mutableStateOf<List<Item>>(emptyList())
+    private val _isLoading = mutableStateOf(false)
+    val items: State<List<Item>> = _items
+    val isLoading: State<Boolean> = _isLoading
+    private var page = 0
+    private val pageSize = 20
+    fun loadMoreItems() {
+        if (_isLoading.value) return // Don't load if already loading
+        _isLoading.value = true
+        val newItems = fetchData(page, pageSize)
+        _items.value = _items.value + newItems
+        page++
+        _isLoading.value = false
+    }
+}
+```
+
+Use case for `rememberLazyListState` -> 1. Detect scroll position for infinite scrolling
+2.implementing scroll to top functionality
+
+### Q72. What is `produceState` and `rememberCoroutineScope` and its use cases?
+
+When we want to fetch async data and expose it as a state in compose friendly manner, produce state
+is a great choice. It automatically creates a state object and updates it with async result
+
+```kotlin
+@Composable
+fun FetchDataWithProduceState(): State<String> {
+    return produceState(
+        initialValue =
+            "Loading..."
+    ) {
+        value = fetchDataFromApiAsync()
+    }
+}
+
+@Composable
+fun DisplayData() {
+    val data = FetchDataWithProduceState()
+    Text(text = data.value)
+}
+```
+
+Best to use when managing long running async task while exposing results as state. Keeping UI
+recomposition minimal by avoid unnecessary recompositions.
+
+`rememberCoroutineScope` provides a coroutine scope that can be used for launching coroutines on
+user actions i.e button clicks.
+
+```kotlin
+@Composable
+fun FetchDataOnClick() {
+    var data by remember { mutableStateOf("Press the button") }
+    val coroutineScope = rememberCoroutineScope()
+    // Creates a coroutine scope tied to the lifecycle of the composable
+
+    Column {
+        Text(text = data)
+        Button(onClick = {
+            coroutineScope.launch {
+                data = fetchDataFromApiAsync()
+            }
+        }) {
+            Text("Fetch Data")
+        }
+    }
+}
+```
+
+Best to use when performing async operations on user interactions e.g button clicks, swipe gestures.
+Running coroutines without worrying about lifecycle issues.
+
+Here are some questions that can be asked in an interview about this topic:
+
+1. Why is handling asynchronous operations important in Jetpack Compose?
+   To keep the UI responsive by avoiding blocking the main thread.
+2. Which Jetpack Compose API is best for fetching data when a composable
+   enters the composition? LaunchedEffect is ideal for running coroutines when a
+   composable enters the composition.
+3. How can you run a coroutine in response to a user action (e.g., button click)
+   in Jetpack Compose? Use rememberCoroutineScope() to launch coroutines in event
+   handlers.
+4. What is the purpose of produceState in Jetpack Compose? It creates state-driven
+   async operations while automatically updating state when new data is available.
+5. How can you prevent unnecessary recompositions while handling async
+   data? Use remember and derivedStateOf to avoid excessive recompositions.
+6. How do you handle errors while fetching async data in Jetpack Compose?
+   Use a sealed class (e.g., Result.Success , Result.Error , Result.Loading ) to
+   manage different states.
+7. What is DisposableEffect , and when should you use it? It is used to run side
+   effects when a composable enters and clean up when it leaves (e.g., canceling
+   listeners).
+8. How do you cancel an unnecessary coroutine in Jetpack Compose? Use
+   rememberCoroutineScope() , which automatically cancels coroutines when the
+   composable is removed.
+9. What is the difference between LaunchedEffect and rememberCoroutineScope ?
+   LaunchedEffect runs when a composable enters composition, while
+   rememberCoroutineScope is used for launching coroutines in response to user actions.
+10. How does SideEffect differ from LaunchedEffect in Jetpack Compose?
+    SideEffect runs on every recomposition (useful for logging), while LaunchedEffect
+    runs only when its key changes.
+
+### Q73. Use case of derivedStateOf?
+
+This is a good scenario where we want to update UI state periodically by checking, consider the
+following example :
+
+```kotlin
+@Composable
+fun FetchDataIncorrectly() {
+    var data by remember { mutableStateOf("Loading...") }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000) // Simulating periodic updates
+            data = fetchDataFromApiAsync() // Updating state every second
+        }
+    }
+    Text(text = data)
+}
+```
+
+So in here, UI recomposes i.e re-renders everytime data changes, causing unnecessary recompositions.
+If the API call returns frequently changing data, the UI may become inefficient
+
+Solution is to use `derivedStateOf` to optimize UI updates
+
+```kotlin
+@Composable
+fun FetchDataOptimized() {
+    var rawData by remember { mutableStateOf("Loading...") }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000)
+            rawData = fetchDataFromApiAsync()
+        }
+    }
+    //This ensures that UI updates only when rawData actually changes.
+    val data = remember(rawData) { derivedStateOf { processData(rawData) } }
+    Text(text = data.value)
+}
+
+//Another example which will calculate wordCount everytime this WordCounter composable is called/recomposed, it calculates wordCount value which is unnecessary
+@Composable
+fun WordCounter(text: String) {
+    val wordCount = text.split(" ").size // Derived value
+    Text("Word count: $wordCount")
+}
+
+//Solution below, it will only recalculate when text actually changes in composable and uses remember too
+@Composable
+fun WordCounter(text: String) {
+    val wordCount by remember(text) {
+        derivedStateOf {
+            text.split(" ").size // Compute only when 'text' changes
+        }
+    }
+    Text("Word count: $wordCount")
+}
+
+```
+
+NOTE - Always use derivedStateOf with remember to ensure the derived state persists across
+recompositions, without remember, the state is calculated on every recomposition, defeating the
+purpose of optimization.
+
+1. What is derivedStateOf in Jetpack Compose? derivedStateOf is a function used
+   to create a derived state that recalculates only when its dependent state changes,
+   preventing unnecessary recompositions.
+2. Why do we use derivedStateOf ? It helps optimize performance by avoiding
+   redundant recomputations of derived values in Compose.
+3. How is derivedStateOf different from regular state handling? Regular state is
+   recomputed on every recomposition, while derivedStateOf recalculates only when
+   its dependencies change.
+4. What happens if you don't use remember with derivedStateOf ? Without remember , derivedStateOf
+   will be recreated and recalculated on every recomposition, negating its performance benefits.
+5. Can derivedStateOf prevent recompositions? No, it prevents redundant
+   recalculations of derived values but does not stop recompositions triggered by state changes.
+6. What are the dependencies in derivedStateOf ? Dependencies are the states
+   referenced within the block, and derivedStateOf recalculates only when these states change.
+7. Can you use derivedStateOf without a dependency? No, derivedStateOf requires
+   dependent states to determine when to recalculate the derived value.
+8. Does derivedStateOf work with mutable data? It works best with immutable
+   data; using mutable data can cause recompositions if not handled properly.
+9. Can you use derivedStateOf with a LazyColumn ? Yes, but avoid placing it inside
+   the LazyColumn 's items loop; calculate derived states at a higher composable level
+   instead.
+10. What is the relationship between remember and derivedStateOf? remember
+    ensures that the derivedStateOf block is retained across recompositions, making it
+    efficient.
+11. What is a real-world example of using derivedStateOf ? Calculating a filtered list
+    of visible items or the count of selected checkboxes in a form is a common use case.
+
+### Q74. Theming questions in Jetpack compose?
+
+1. What is theming in Jetpack Compose? Theming in Jetpack Compose allows
+   defining a consistent set of colors, typography, and shapes using MaterialTheme .
+2. What are the key components of MaterialTheme ? MaterialTheme consists of
+   colorScheme , typography , and shapes to define the app's visual style.
+3. How do you apply a theme to an entire app in Jetpack Compose? Wrap your
+   app's Composable functions inside a MaterialTheme block that provides colors,
+   typography, and shapes.
+4. How can you support dark mode in Jetpack Compose? Define separate color
+   schemes for light and dark themes and switch using isSystemInDarkTheme() .
+5. What is the benefit of using MaterialTheme.colorScheme instead of hardcoded
+   colors? It ensures theme consistency and supports automatic adaptation to dark
+   mode.
+6. What is LocalContentColor , and why is it useful? LocalContentColor
+   automatically adapts text/icon colors based on the parent theme (e.g., dark mode
+   adjustments).
+7. What is CompositionLocalProvider , and how can it be used in theming? It allows
+   defining custom theme properties (like spacing or paddings) that can be accessed
+   globally.
+8. How can you dynamically switch themes in Jetpack Compose? Store a
+   MutableState for theme selection and recompose UI when the state changes.
+9. What are some best practices for theming in Jetpack Compose? Centralize
+   theme definitions, use MaterialTheme values instead of hardcoded styles, support
+   dark mode, and create reusable themed components.
+
+### Q75. Modifiers and Side effect questions in Compose?
+
+1. What is a Modifier in Jetpack Compose? A Modifier is an immutable object
+   used to modify or decorate a composable's behavior, appearance, or layout.
+2. How do you apply multiple modifiers to a composable in Jetpack Compose?
+   Modifiers can be chained together using dot notation to apply multiple
+   modifications to a composable.
+3. What is the impact of modifier order in Jetpack Compose? The order of
+   modifiers affects the layout and appearance of the composable, as they are applied
+   sequentially.
+4. How can you optimize performance when using modifiers? Minimize
+   redundant modifier chains, use custom modifiers for reusability, and cache
+   expensive calculations with remember .
+5. What is a custom modifier in Jetpack Compose? A custom modifier is a user defined modifier that
+   encapsulates common or complex modifier behavior for reuse across composables.
+6. What does Modifier.graphicsLayer do in Jetpack Compose?
+   Modifier.graphicsLayer is used to apply graphical transformations like scaling,
+   rotation, and translation to a composable.
+7. What is the difference between Modifier.padding() and Modifier.offset() ?
+   Modifier.padding() adds space inside the composable, while Modifier.offset()
+   shifts the composable's position relative to its parent.
+8. How do you handle gestures using modifiers in Jetpack Compose? Gesture
+   modifiers like pointerInput and clickable are used to detect and handle user
+   interactions such as taps, swipes, and gestures.
+9. What is the purpose of Modifier.fillMaxWidth() in Jetpack Compose?
+   Modifier.fillMaxWidth() makes a composable expand to the full width of its parent
+   container.
+10. How do you apply conditional modifiers in Jetpack Compose? Conditional
+    modifiers can be applied by using if or when statements inside the modifier chain
+    based on the required conditions.
+
+Side effects questions :
+
+1. What is a side effect in Jetpack Compose? A side effect in Jetpack Compose is an
+   operation that interacts with external systems or manages state outside the
+   composable function's scope.
+2. What is LaunchedEffect used for? LaunchedEffect is used to launch a coroutine
+   that runs automatically when a composable enters the composition, and it's
+   lifecycle-aware.
+3. When should you use rememberCoroutineScope ? Use rememberCoroutineScope to
+   manually launch a coroutine in response to user actions, like button clicks.
+4. What does the SideEffect API do? The SideEffect API is used to perform
+   lightweight operations after every recomposition, such as logging or syncing
+   external state.
+5. How is DisposableEffect different from LaunchedEffect? DisposableEffect is
+   used for operations that require both setup and cleanup, like registering and
+   unregistering listeners, while LaunchedEffect is for running coroutines that don't
+   require cleanup.
+6. What is produceState in Jetpack Compose? produceState is used to convert
+   external data sources like Flow or suspend functions into a state object that can be
+   used within a composable.
+7. When should SideEffect be avoided? SideEffect should be avoided for longrunning or heavy
+   operations; it is meant for lightweight tasks that don't block the
+   UI.
+8. Can side effects in Jetpack Compose lead to memory leaks? Yes, if not
+   managed correctly (e.g., not using lifecycle-aware APIs like LaunchedEffect ), side
+   effects can cause memory leaks.
+9. How does rememberCoroutineScope manage lifecycle in Compose?
+   rememberCoroutineScope ties coroutines to the composable lifecycle, automatically
+   canceling them when the composable leaves the composition.
+10. Can you use side effect APIs to handle UI updates in Jetpack Compose? Yes,
+    side effect APIs can be used to manage UI updates, but should be used carefully to
+    ensure lifecycle management and avoid redundant recompositions.
+
+### Q76. How Saver works in Compose?
+
+RememberSaveable automatically saves the state in a Bundle (Android's mechanism for saving data
+during configuration changes). Data types like primitive Int, String, Boolean and types supported by
+Parcelable and Serializable are saved by default
+
+For custom objects, you must provide a custom saver using the Saver API
+
+```kotlin
+data class CounterState(val count: Int)
+
+@Composable
+fun CounterWithCustomObject() {
+    val counterSaver = Saver<CounterState, Int>(
+        save = { it.count }, // How to save the state
+        restore = { CounterState(it) } // How to restore the state
+    )
+    val counterState = rememberSaveable(stateSaver = counterSaver) { CounterState(0) }
+    Button(onClick = { counterState.count++ }) {
+        Text("Count: ${counterState.count}")
+    }
+}
+
+//// rememberSaveable works best with primitives, Parcelable , or Serializable types, example BELOW.
+@Parcelize
+data class User(val name: String, val age: Int) : Parcelable
+
+@Composable
+fun UserProfile() {
+    var user by rememberSaveable {
+        mutableStateOf(
+            User(
+                "Alice", 25
+            )
+        )
+    }
+    Column {
+        Text("Name: ${user.name}")
+        Text("Age: ${user.age}")
+    }
+}
+
+```
+
+remember : Best for temporary or in-memory state that doesn't need to persist
+beyond the current configuration.
+rememberSaveable : Ideal for state that must persist across configuration
+changes, like user input or UI positions
+
+1. What is the purpose of the remember function in Jetpack Compose? remember
+   is used to retain a value across recompositions, so it doesn't get reset every time the
+   composable is recomposed.
+2. How does rememberSaveable differ from remember in Jetpack Compose?
+   rememberSaveable retains state across recompositions and configuration changes
+   (e.g., screen rotations), while remember only persists state during recompositions.
+3. What data types can rememberSaveable store? rememberSaveable can store
+   primitive types, Parcelable objects, and custom objects if a Saver is provided.
+4. When should you use rememberSaveable instead of remember ? Use
+   rememberSaveable when you need to retain the state across configuration changes,
+   like screen rotations.
+5. What is the benefit of using the remember delegate in Jetpack Compose? The
+   remember delegate simplifies state initialization and access, making the code more
+   concise and readable.
+6. How do you access a state stored with remember in Jetpack Compose? You
+   access the state using .value when using remember { mutableStateOf() } , or directly
+   when using the remember delegate.
+7. Can you use rememberSaveable to store a custom object? Yes, but you must
+   provide a Saver to define how the custom object should be serialized and restored.
+8. What happens if you use remember in a non-composable function? remember
+   can only be used inside composable functions. Using it outside of composables will
+   result in a compilation error.
+9. How does rememberSaveable persist state across configuration changes?
+   rememberSaveable leverages Android's SavedInstanceState mechanism to save and
+   restore state during configuration changes.
+10. Can you use rememberSaveable with non-primitive types? Yes, but only if you
+    provide a custom Saver to handle the serialization and deserialization of nonprimitive types.
+
+### Q76. How Saver works in Compose?
+
+### Q77. How Saver works in Compose?
+
+### Q78. How Saver works in Compose?
+
+### Q79. How Saver works in Compose?
+
+### Q80. How Saver works in Compose?
+
+### Q81. How Saver works in Compose?
+
+### Q82. How Saver works in Compose?
+
+### Q83. How Saver works in Compose?
+
+### Q84. How Saver works in Compose?
+
+### Q85. How Saver works in Compose?
+
+### Q86. How Saver works in Compose?
+
+### Q87. How Saver works in Compose?
+
+### Q88. How Saver works in Compose?
 
 ### How would you pass an intent from one app to another app?
 
