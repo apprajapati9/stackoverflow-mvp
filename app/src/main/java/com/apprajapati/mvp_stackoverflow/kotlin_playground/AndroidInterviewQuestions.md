@@ -4,7 +4,10 @@ package com.apprajapati.mvp_stackoverflow.kotlin_playground
 
 ## Android lifecycle
 
-### Q.1 Describe the activity lifecycle
+### Q.1 Describe the activity lifecycle and what is activity?
+
+An Activity represents a single screen with a user interface and the lifecycle defines the various
+stages an activity goes through from its creation to its destruction.
 
 The android activity lifecycle describes the different states an activity goes through
 during its lifetime, from creation to destruction.
@@ -16,20 +19,58 @@ during its lifetime, from creation to destruction.
     onStart() -  the activity becomes visible to the user but is not yet interactive. 
     This is called after onCreate() and before onResume().
 
-    onRestart() - if the activity is stopped and then restarted (e.g the user navigates 
-    back to it), this method is called before onstart(). 
-
     onResume() - the activity is in the foreground and user can interact with it. This is
     where you resume any paused UI updates, animations or input listeners. 
 
     onPause() 0 This is called when the activity is partially obscured by another activity
-    (e.g dialog). The activity is still visible bot not in focus. Used to pause operations
+    (e.g dialog). The activity is still visible but not in focus. Used to pause operations
     like animations, sensor updates or saving data. 
 
     onStop - the activity is no longer visible to the user. You should release resources
     that are not needed while activity is stopped such as background tasks or heavy objects.
 
     ondestroy - This is called before the activity is fully destroyed and removed from memory. 
+
+    onRestart() - if the activity is stopped and then restarted (e.g the user navigates 
+    back to it), this method is called before onstart(). 
+
+    onSaveInstanceState(Bundle outState) - Called before the activity is temporarily destroyed. It allows you to save any dynamic state (user data) to the outState bundle. The system uses this bundle to restore the state if the activity needs to be recreated.
+
+    onRestoreInstanceState(Bundle instanteState) - called after onStart() when the activity is being re-intialized from previously saved state. it contains the data saved in onSaveInstanceState.
+
+1. Why do we need to call setContentView() in onCreate() of the Activity class?
+   setContentView() is used to set the layout for the activity, defining its user interface.
+   It should be called to provide the visual structure for the activity.
+2. When only onDestroy is called for an activity without onPause() and
+   onStop()? This can happen when the system forcefully destroys an activity to
+   reclaim resources, bypassing the regular lifecycle flow.
+3. From Activity A, go to Activity B, then go back to Activity A, which methods
+   of Activity A will be called? onRestart() of Activity A will be called when
+   returning from Activity B to Activity A and then onStart() and onResume().
+4. How to restart an activity programmatically? You can restart an activity by
+   creating a new Intent for the same activity and calling startActivity(intent) .
+   Intent intent = getIntent() finish() startActivity(intent)
+5. Explain how the back stack is managed in Android? The back stack is managed
+   by the system and keeps track of the activities in the order they are opened. It is used
+   for navigation and follows the Last In, First Out (LIFO) principle.
+6. What is the purpose of the onSaveInstanceState() method, and when is it
+   called? onSaveInstanceState() is called before an activity is temporarily destroyed,
+   allowing the saving of crucial data to be restored later during recreation.
+7. How does the launch mode of an activity affect its lifecycle? The launch mode
+   determines how the system creates and maintains instances of the activity. Different
+   launch modes can impact when and how lifecycle methods are called.
+8. Explain the role of onConfigurationChanged() in the activity lifecycle.
+   onConfigurationChanged() is called when a configuration change occurs (e.g., screen
+   rotation), allowing developers to handle such changes without the activity being
+   recreated.
+9. What are some common scenarios where understanding the activity
+   lifecycle is crucial for app development? Understanding the activity lifecycle is
+   crucial when dealing with background tasks, handling user interactions, and
+   managing resources to ensure a smooth user experience.
+10. How can you ensure that background tasks are not interrupted when an
+    activity goes into the background? By appropriately managing background tasks
+    in onPause() and onResume() , ensuring tasks are paused when the activity is not
+    visible and resumed when it comes back into focus.
 
 ### Q2. How saving and restoring state works in Android?
 
@@ -417,6 +458,29 @@ mode works perfectly fine.
 💬 Final Tip
 If you’re seeing weird back stack behavior, check your launch modes. Misusing them can cause a messy
 UX — and frustrated users.
+
+1. What is the purpose of launch modes in Android activities? Launch modes
+   define how instances of an activity are created and interact within an Android
+   application.
+2. Explain the Standard launch mode in Android. Standard launch mode creates a
+   new instance of the activity every time it's launched, forming an independent stack.
+3. How does SingleTop launch mode differ from Standard? SingleTop checks if an
+   instance of the activity is at the top of the stack; if yes, it reuses it; otherwise, it
+   creates a new instance.
+4. In which scenario would you use SingleTask launch mode? SingleTask is useful
+   when you want activities to be organized into tasks with a focus on specific
+   functionalities.
+5. Describe the behavior of SingleInstance launch mode. SingleInstance creates a
+   single instance of the activity in its own task, isolated from other activities, and
+   exiting the entire task on the back button press.
+6. What happens when you launch a SingleInstance activity while another task
+   is in the foreground? The existing task is cleared, and a new task is created
+   exclusively for the SingleInstance activity.
+7. Can you reuse an instance of a SingleTask activity within the same task? Yes,
+   if an instance of a SingleTask activity is already in the task, the system reuses it.
+8. How does the launch mode of an activity impact its interaction with the back
+   button? The launch mode influences whether the back button navigates within the
+   same task or exits the entire task, depending on the launch mode and task structure.
 
 ### Q15. What is Suspend vs Blocking functions?
 
@@ -2947,29 +3011,549 @@ changes, like user input or UI positions
 10. Can you use rememberSaveable with non-primitive types? Yes, but only if you
     provide a custom Saver to handle the serialization and deserialization of nonprimitive types.
 
-### Q76. How Saver works in Compose?
+### Q76. Gradle.properties and settings.gradle file purpose?
 
-### Q77. How Saver works in Compose?
+This file alls developers to define and customize various settings that influence how Gradle builds
+and manages the project. From memory allocation to androix compatibility, each property within this
+file plays a role in optimizing the development experience.
 
-### Q78. How Saver works in Compose?
+This file is specially useful because it enables developers to control how Gradle allocates
+resources, handle dependencies and applies coding standards -- all without altering the build logic
+itself.
 
-### Q79. How Saver works in Compose?
+- org.gradle.jvmargs=-Xmx1536m ==> This property allows you to configure the maximum heap size that
+  Gradle can use. Adequate memory allocation is crucial for preventing out-of memory errors and
+  speeding up build process.
+- org.gradle.daemon=true => The Gradle Daemon is a long-running background process
+  that helps Gradle avoid the overhead of starting up from scratch with every build.
+  Enabling the daemon can significantly speed up builds, especially for frequent,
+  incremental builds during development.
+- org.gradle.parallel=true ==>  Enabling parallel execution allows Gradle to run
+  independent tasks concurrently, which can reduce build times in multi-module
+  projects. For example, if you have multiple modules that don't depend on each
+  other, Gradle can build them simultaneously.
+- org.gradle.configureondemand=true ==> enabled, Gradle will skip configuring modules that aren't
+  involved in the current build, saving time during the configuration phase.
+- Can also store sensitive data such as firebase key or api keys
 
-### Q80. How Saver works in Compose?
+1. What is the purpose of the gradle.properties file in an Android project? The
+   gradle.properties file is used to define configuration properties that can be shared
+   across Gradle scripts, improving build customization and performance.
+2. Can you pass sensitive data (like API keys) through gradle.properties? While
+   you can define sensitive data in gradle.properties , it's recommended to use secure
+   methods like local.properties or environment variables to avoid committing them
+   to version control.
+3. What is the difference between global and project-level properties in
+   gradle.properties ? Global properties are set in the user's gradle.properties file,
+   while project-level properties are defined within the project's gradle.properties file.
+4. How can you manage environment-specific configurations using
+   gradle.properties ? By defining different properties for each environment (like dev,
+   staging, and prod) and referencing them in the build.gradle file based on the build
+   type or flavor.
+5. How can you improve build performance using gradle.properties ? You can
+   optimize performance by setting properties like org.gradle.parallel=true and
+   increasing memory allocation with org.gradle.jvmargs .
+6. What does android.useAndroidX in gradle.properties do? It tells Gradle to use
+   AndroidX libraries instead of the legacy support libraries in the Android project.
+7. What is the role of the kotlin.code.style property in gradle.properties ? It
+   defines the Kotlin code style to be used in the project, with values like official or
+   obsolete .
+8. What is the use of the buildConfigField method in build.gradle related to
+   gradle.properties ? buildConfigField is used to inject values from
+   gradle.properties into the BuildConfig class, making them available in the app's
+   source code.
 
-### Q81. How Saver works in Compose?
+Settings.gradle ===== This file is responsible for defining which modules are part of your project
+and guiding gradle through the build process.
 
-### Q82. How Saver works in Compose?
+1. include ':app', ':library', ':feature' -> can specify diff modules
+2. rootProject.name = "myProjectName" -> sets up project name
+3. define custom paths for modules
+    - project(':library').projectDir = new File('custom/path/to/lib')
+4. To include a module for a specific build environment
+    - if(gradle.startParameter.taskNames.contains("debug")) { include ':feature_debug' }
+5. Kotlin DSL code
 
-### Q83. How Saver works in Compose?
+```kotlin
+// settings.gradle.kts
+rootProject.name = "MyAwesomeProject"
+include(":app", ":library", ":feature")
 
-### Q84. How Saver works in Compose?
+project(":library").projectDir = File("custom/path/to/library")
+```
 
-### Q85. How Saver works in Compose?
+1. What is the purpose of the settings.gradle file in an Android project? It defines which modules
+   are
+   included in the project and sets the project structure for Gradle.
+2. Can you customize the project name in settings.gradle? Yes, by setting rootProject.name = "
+   ProjectName".
+3. What happens if a module is not included in settings.gradle? Gradle won't recognize the module,
+   and
+   it won't be included in the build process.
+4. How does settings.gradle affect dependency resolution in multi-module projects? It ensures Gradle
+   knows all modules, allowing it to correctly resolve dependencies between them.
+5. Is settings.gradle required in a single-module Android project? Yes, it is still required as it
+   defines the main module and project structure.
+6. What is the difference between settings.gradle and build.gradle? settings.gradle defines the
+   project's modules, while build.gradle configures each module's dependencies and settings.
+7. Can you conditionally include modules in settings.gradle? Yes, you can use conditional logic to
+   include modules based on the build environment.
 
-### Q86. How Saver works in Compose?
+### Q77. LateInit vs Lazy?
 
-### Q87. How Saver works in Compose?
+1. What is the main purpose of lateinit in Kotlin, and how does it differ from
+   declaring a variable as nullable? lateinit is used to declare variables that
+   will be initialized later, ensuring they are ready before usage. It differs from
+   nullable variables by guaranteeing non-null values after initialization.
+2. Explain the concept of "lazy initialization" in Kotlin. lazy allows delayed
+   creation of variables until their first usage, promoting efficiency by
+   initializing only when necessary.
+3. What error is thrown if a lateinit variable is accessed before it's initialized?
+   How can this error be avoided or handled? Trying to access a lateinit
+   variable before initialization results in UninitializedPropertyAccessException . To
+   avoid this, ensure initialization before usage or check if it's initialized.
+4. Compare and contrast the use cases for lateinit and lazy in Kotlin. In what
+   scenarios would you prefer one over the other? Use lateinit when you need
+   a variable to be initialized before use; use lazy when you want to defer
+   initialization until it's actually needed, like with expensive objects.
+
+### Q78. How to fix or prevent an Android app lag ?
+
+- Why does frequent Garbage Collection (GC) lead to Android app lag? During GC, the app is paused,
+  impacting real-time updates and causing a laggy experience.
+- How can auto-boxing affect app performance, and what's the recommended alternative? Auto-boxing
+  can increase memory usage; prefer primitive types like int over their boxed counterparts like
+  Integer.
+- Why use ArrayMap and SparseArray for optimized data storage in Android? These data structures are
+  more memory-efficient than traditional collections, improving app performance.
+- How does offloading heavy work to background threads improve app performance? It keeps the main
+  thread responsive, preventing UI lag during resource-intensive tasks.
+- Why is it recommended to use static final for constants in Java or const val in Kotlin? Using
+  static final or const val ensures efficient handling of constant values by the compiler.
+- In Android development, why should one avoid internal getters/setters where not necessary? Direct
+  field access is approximately three times faster, enhancing code performance.
+- What is the significance of using LRU cache for bitmaps in Android? LRU cache prevents redundant
+  decoding of bitmaps, reducing the frequency of Garbage Collection.
+- How can StrictMode be beneficial in Android development? StrictMode helps detect unintentional
+  disk, network, or database operations on the main thread, improving app performance.
+- Why enable Profile GPU Rendering in Android development? It provides a visual representation of UI
+  rendering time, aiding in optimizing performance relative to the 16ms benchmark.
+- Why is minimizing object allocation crucial for preventing Android app lag? Reducing unnecessary
+  object allocation minimizes the workload on the Garbage Collector, enhancing overall app
+  responsiveness.
+- Why should developers optimize resource files, such as images and assets, in Android apps?
+  Optimized resource files reduce the overall size of the app, improving performance and user
+  experience.
+- How can dynamic UI rendering contribute to better app performance? Loading components dynamically
+  based on user interaction reduces the initial rendering load, improving perceived performance.
+
+### Q79. Adapting diff screens in View system?
+
+Window size classes are a set of opinionated viewport breakpoints that help you design, develop and
+test responsive/adaptive layouts. The breakpoints balance layout simplicity with flexibility to
+optimize your app for unique cases.
+
+Window size classes are categorize the display area available to your app as COMPACT, MEDIUM, or
+EXPANDED. Available width and height are classified separately, so at any point in time, your app
+has two window size classes, one for width and one for height.
+
+Breakdown of window sizes :
+========= WIDTH ::
+
+- Compact width: width < 600dp | 99.96% of phones in portrait
+- Medium width: 600dp ≤ width < 840dp | 93.73% of tablets in portrait, most large unfolded inner
+  displays in portrait
+- Expanded width: width ≥ 840dp | 97.22% of tablets in landscape, most large unfolded inner displays
+  in landscape
+
+========= HEIGHT ::====
+
+- Compact height: height < 480dp | 99.78% of phones in landscape
+- Medium height: 480dp ≤ height < 900dp | 96.56% of tablets in landscape, 97.59% of phones in
+  portrait
+- Expanded height: height ≥ 900dp | 94.25% of tablets in portrait
+
+Resource Qualifiers
+===================
+Resource qualifiers are tags added to the resource directories' names to specify
+conditions under which the resources should be used. These qualifiers are based
+on device characteristics such as screen size, density, orientation, and language.
+Common resource qualifiers include:
+layout: Used for layout files. For example, layout-small , layout-large .
+layout : Default layout folder for general layouts.
+layout-small : For devices with small screen sizes.
+layout-normal : For devices with normal screen sizes.
+layout-large : For devices with large screen sizes.
+layout-xlarge : For extra-large screen sizes.
+layout-w600dp : For devices with a minimum width of 600dp.
+layout-h720dp : For devices with a minimum height of 720dp.
+layout-land : For landscape orientation layouts.
+layout-port : For portrait orientation layouts.
+layout-sw600dp : For devices with a smallest width of 600dp or more.
+layout-sw720dp : For devices with a smallest width of 720dp or more.
+
+
+Use dp and sp for Dimensions and Text Size instead of px
+===========
+Avoid using pixels to define distances or sizes. Defining dimensions with pixels is
+a problem because different screens have different pixel densities, so the same
+number of pixels corresponds to different physical sizes on different devices.
+
+- dp (Density-independent Pixels): dp is a unit of measurement that scales with
+  the screen density of the device. It ensures consistent physical sizes across
+  different screen densities. 1 dp is equivalent to one physical pixel on a 160dpi
+  (mdpi) screen. Android automatically scales dp units based on the device's
+  screen density, making it ideal for specifying dimensions such as width,
+  height, and margins.
+- sp (Scale-independent Pixels): sp is similar to dp but specifically designed for
+  specifying text sizes. It accounts for both screen density and user preference
+  for font size. Like dp, sp units are scaled based on the device's screen density,
+  ensuring that text remains readable across various devices and allows users
+  to adjust text size in their device settings.
+- px (Pixels): px represents individual pixels on the screen. While px provides
+  precise control over layout and text size, it does not account for different
+  screen densities. Specifying dimensions and text sizes in px can lead to
+  inconsistency and poor readability across devices with different screen
+  densities.
+
+1. What are the benefits of using RecyclerView over ListView? RecyclerView
+   offers better performance, memory management, and flexibility in handling large
+   datasets compared to ListView.
+2. Explain the purpose of resource qualifiers in Android layouts. Resource
+   qualifiers help provide different layouts, drawable resources, and values for specific
+   device configurations, such as screen size, density, and orientation.
+3. Why is it recommended to use dp and sp instead of px in Android layouts?
+   Using dp and sp ensures consistent sizing and text readability across different screen
+   densities and user preferences, improving UI adaptability.
+4. What is the ViewHolder pattern in RecyclerView? The ViewHolder pattern
+   minimizes memory usage by caching references to views, reducing the need for
+   frequent view lookups and allocations during scrolling.
+5. How can you create responsive layouts in Jetpack Compose? Utilize Compose's
+   flexible layout components and modifiers, along with resource qualifiers for layout
+   variations, to create responsive UIs.
+6. Explain the concept of window size classes in Android development. Window
+   size classes categorize devices based on screen size and density, providing a
+   framework for designing layouts that adapt to various device configurations.
+
+### Q80. Content provider questions?
+
+1. What is a Content Provider in Android? A Content Provider is a component that
+   manages a central repository of data, providing a standardized interface for
+   accessing and modifying data.
+2. What is the purpose of a Content Provider? To provide a way for applications to
+   share data with each other, while maintaining data integrity and security.
+3. What is the difference between a Content Provider and a database? A Content
+   Provider is a wrapper around a database, providing a higher-level interface for
+   accessing and modifying data.
+4. How do you define a Content Provider in Android? By extending the
+   ContentProvider class and overriding its methods, such as query(), insert(),
+   update(), and delete().
+5. What is the role of the UriMatcher in a Content Provider? To match incoming
+   URIs to specific data queries, allowing the Content Provider to determine how to
+   handle the request.
+6. How do you handle data updates in a Content Provider? By using the
+   notifyChange() method to notify registered observers that the data has changed.
+7. What is the difference between a Content Resolver and a Content Provider?
+   A Content Resolver is a client that requests data from a Content Provider, while a
+   Content Provider is the component that manages the data.
+8. How do you secure data in a Content Provider? By using permissions, such as
+   read and write permissions, to control access to the data.
+
+### Q81. What are broadcast receivers?
+
+It is a component that allows an app to receive and respond to system wide announcements, called
+broadcasts. These broadcasts are messages sent by the system or other apps to notify other other
+apps of certain events or changes.
+
+Types of broadcasts
+
+1. System broadcasts  : sent by system and typically notify apps of system wide events like device
+   boot completed, battery low, screen turned on/off, network connectivity changed.
+2. Custom broadcasts :  sent by apps and can be used for various purposes.
+   sending data between apps, notifying other apps of events, triggering actions in other apps
+   For example, music app sending a broadcast to notify other apps that a new song is playing.
+   a weather app sending a broadcast to notify other apps of a weather update
+   a social media app sending a broadcast to notify other apps of a new post
+
+How do they work?
+
+1. Register the broadcast receiver in Manifest file.
+
+    ```xml
+    
+    <receiver android:name=".MyReceiver">
+        <intent-filter>
+            <action android:name="android.intent.action.BATTERY_LOW" />
+        </intent-filter>
+    </receiver>
+    
+    ```
+2. Create the broadcast receiver class
+
+    ```kotlin
+    class MyReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_BATTERY_LOW) {
+                Toast.makeText(
+                    context,
+                    "Battery is low", Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }   
+   
+   //Step 3. send broad cast
+      fun sendBroadcast() {
+        val intent = Intent("android.intent.action.BATTERY_LOW")     
+        sendBroadcast(intent)
+   }
+   ```
+3. Check code
+4. Receive the broadcast
+
+Create a custom broadcast
+
+```kotlin
+// Step 1: Define the custom broadcast action
+com.example.ACTION_NEW_MESSAGE
+```
+
+```xml
+<!-- Step 2: Register the Broadcast Receiver in the AndroidManifest.xml file -->
+<receiver android:name=".MyCustomReceiver">
+    <intent-filter>
+        <action android:name="com.example.ACTION_NEW_MESSAGE" />
+    </intent-filter>
+</receiver>
+```
+
+```kotlin
+// Step 3: Create the Broadcast Receiver class
+class MyCustomReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action ==
+            "com.example.ACTION_NEW_MESSAGE"
+        ) {
+            val message = intent.getStringExtra("message")
+            Toast.makeText(
+                context,
+                "Received message: $message", Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+}
+
+// Step 4: Send the custom broadcast
+fun sendCustomBroadcast(message: String) {
+    val intent = Intent("com.example.ACTION_NEW_MESSAGE")
+    intent.putExtra(
+        "message", message
+    )
+    sendBroadcast(intent)
+}
+
+
+```
+
+Use Cases for Broadcast Receivers
+
+- System events: Receive notifications when the system changes state (e.g.
+  battery low, screen on/off)
+- Data from other apps: Receive data sent by other apps (e.g. new message
+  notifications)
+- Notifications: Display notifications to the user (e.g. new email, message, or
+  update)
+- Widget updates: Update widgets on the home screen (e.g. weather, news, or
+  stocks)
+- Data sync: Sync data between apps (e.g. contacts, calendar events, or notes)
+  Location updates: Receive updates when the device enters a specific location
+  (e.g. geofencing)
+- Sensor data: Receive data from device sensors (e.g. light, sound, or motion)
+  Geofencing: Receive notifications when entering a specific location (e.g.
+  home, work, or school)
+- Wearable updates: Receive updates from wearable devices (e.g. fitness
+  trackers or smartwatches)
+- Custom broadcasts: Send and receive custom broadcasts between apps (e.g.
+  custom notifications or data updates)
+
+1. What is a Broadcast Receiver in Android? A component that responds to system wide announcements
+   or
+   events.
+2. What is the purpose of an Intent Filter in a Broadcast Receiver? To specify
+   which broadcasts the receiver should handle.
+3. What is the difference between a synchronous and asynchronous Broadcast
+   Receiver? A synchronous receiver runs on the main thread, while an asynchronous
+   receiver runs on a background thread.
+4. When should you unregister a Broadcast Receiver? When the receiver is no
+   longer needed, to avoid wasting resources.
+5. Can a Broadcast Receiver start an Activity? Yes, by using the startActivity()
+   method.
+6. How do you handle data received in a Broadcast Receiver? By using the
+   getIntent() method and extracting the data from the Intent.
+
+### Q82. Context in Android?
+
+It provides a connection to the Android system. Context allows us to interact with Android system,
+resources and components.
+
+Here are the main things to consider when using Context in Android:
+
+1. Choose the right Context: Use the appropriate type of Context for the task
+   (ActivityContext, ApplicationContext, ServiceContext, BroadcastReceiverContext,
+   FragmentContext, ViewContext).
+2. Avoid static references: Don't hold a Context in a static variable, as it can
+   prevent garbage collection and lead to memory leaks.
+3. Use WeakReference: Use WeakReference to hold a reference to a Context,
+   allowing it to be garbage collected if needed.
+4. Check for null: Always check if the Context is null before using it to avoid
+   NullPointerExceptions.
+5. Avoid using Context in AsyncTasks: AsyncTasks can outlive the Activity,
+   causing memory leaks.
+6. Avoid using Context in Threads: Threads can outlive the Context, causing
+   memory leaks.
+7. Use Context.getApplicationContext(): Use this method to get the Application
+   Context instead of holding a reference to it.
+8. Be mindful of Context scope: Use the Context that is appropriate for the scope
+   of the operation (e.g., ActivityContext for UI-related operations).
+9. Avoid sharing Context: Don't share a Context between different components or
+   scopes.
+10. Consider using ContextWrapper: Use ContextWrapper to wrap a Context,
+    allowing you to easily switch between different Contexts.
+
+Questions
+
+1. What is the purpose of Context in Android? Context provides access to resources
+   and functionality for applications.
+2. What is the difference between ApplicationContext and ActivityContext?
+   ApplicationContext is tied to the application's lifecycle, while ActivityContext is tied
+   to the activity's lifecycle.
+3. How do you get a reference to the ApplicationContext in an Activity? You can
+   get a reference to the ApplicationContext using getApplicationContext() in an
+   Activity.
+4. What is the difference between getApplicationContext() and
+   getBaseContext()? getApplicationContext() returns the application's context,
+   while getBaseContext() returns the base context for the activity.
+5. How do you use Context to get a reference to the application's resources? You
+   can use Context to get a reference to the application's resources using
+   getResources().
+
+### Q83. DI questions?
+
+1. What is Dependency Injection (DI)? DI is a design pattern where an object's
+   dependencies are provided externally rather than created by the object itself.
+2. Why should we use DI in Android? DI simplifies code by promoting decoupling,
+   improving testability, and making dependency management easier.
+3. What is the difference between Dagger and Hilt? Hilt is built on top of Dagger
+   but is tailored for Android with built-in support for Activities, Fragments, and
+   ViewModels, reducing the complexity of DI setup.
+4. Why should we prefer Hilt over Dagger in Android development? Hilt is
+   recommended because of its simplicity, ease of use, and tight integration with
+   Android components, which reduces boilerplate code.
+5. What is @Inject annotation in Hilt? The @Inject annotation is used to request or
+   declare dependencies for fields or constructors in Hilt.
+6. What are Hilt Scopes? Scopes in Hilt determine the lifespan of an injected
+   dependency, such as @Singleton , @ActivityScoped , and @ViewModelScoped .
+7. What is @Module in Hilt? @Module is used to define how dependencies are provided,
+   typically for classes that cannot be directly injected.
+8. How do you test with Hilt? Use @HiltAndroidTest for setting up Hilt in tests, and
+   create test modules to inject mock dependencies.
+9. What is @UninstallModules in Hilt testing? @UninstallModules is used to remove
+   production modules and replace them with test-specific modules during testing.
+10. What are some best practices for DI? Use constructor injection, choose
+    appropriate scopes, avoid overusing @Singleton , and separate modules based on
+    responsibility.
+11. What are common mistakes in DI? Overusing singletons, circular dependencies,
+    injecting too many dependencies into one class, and forgetting to annotate Android
+    components with @AndroidEntryPoint .
+
+### Q84. Notification in Android?
+
+1. What is a notification channel? A notification channel groups notifications by
+   type, allowing users to manage notification settings individually for each type
+   (Android 8.0+).
+2. Why are notification channels important? They allow users to control
+   preferences (such as sound, vibration) for different notification categories, and are
+   required for notifications on Android 8.0+.
+3. What is a PendingIntent in the context of notifications? A PendingIntent allows
+   an app to execute an action (like launching an activity or a service) on behalf of
+   your app when the user interacts with a notification.
+4. How do you handle notifications when the app is in the foreground? You
+   must handle foreground notifications manually in the onMessageReceived() method
+   of FirebaseMessagingService and create a notification programmatically.
+5. What are rich notifications in Android? Rich notifications use styles like
+   BigTextStyle , BigPictureStyle , or include media such as images and actions to
+   provide more engaging content.
+6. How do you ensure notifications respect Do Not Disturb mode? Notifications
+   should be assigned the appropriate priority level (default, low, high), and should
+   not interrupt the user during DND unless they are marked as high priority or
+   urgent.
+7. How do you manage notification permissions in Android 13? You must request
+   the POST_NOTIFICATIONS permission at runtime, as Android 13 introduced a new
+   permission for sending notifications.
+8. What are notification styles in Android? Notification styles include
+   BigTextStyle , BigPictureStyle , InboxStyle , and MessagingStyle to customize how
+   notifications are displayed.
+9. What is the difference between notification and data payload in Firebase? A
+   notification payload is used for displaying messages to the user, while a data
+   payload is used to send background data for app updates without user interaction.
+10. How do you schedule a notification in Android? You can use AlarmManager ,
+    WorkManager , or JobScheduler to schedule notifications at a specific time or under
+    specific conditions.
+11. How can you optimize notifications for battery and network usage? Batch
+    multiple notifications, use NotificationManager.IMPORTANCE_LOW for non-urgent
+    updates, and avoid sending frequent, unnecessary notifications
+
+### Q85. Deep link in Navigation Component?
+
+[Resource](https://www.youtube.com/watch?v=XJgPIeolJu8)
+
+### Q86. Android Hilt setup and libraries needed?
+
+- Why do we need to use gradle plugin for Hilt Di?
+  One benefit of the Gradle plugin is that it makes using @AndroidEntryPoint and @HiltAndroidApp
+  easier because it avoids the need to reference Hilt’s generated classes. Without the Gradle
+  plugin, the base class must be specified in the annotation and the annotated
+  class must extend the generated class:
+
+```kotlin
+@HiltAndroidApp(MultiDexApplication::class)
+class MyApplication : Hilt_MyApplication()
+
+// With the Gradle plugin the annotated class can extend the base class directly:
+@HiltAndroidApp
+class MyApplication : MultiDexApplication()
+
+//Another benefit is Aggregated tasks
+```
+
+-
+
+### Q87. Destructuring of MutableStateOf?
+
+```kotlin 
+//normal way of doing it
+val state = remember {
+    mutableStateOf("text1")
+}
+val selectedOption = state.value
+
+// destructuring it 
+val (selectedOption, onOptionSelected) = remember {
+    mutableStateOf("text1")
+}
+//This works because MutableState<T> in Compose implements a special Kotlin feature called a component operator
+
+// Under the hood it looks like this
+operator fun <T> MutableState<T>.component1(): T = value
+operator fun <T> MutableState<T>.component2(): (T) -> Unit = { value = it }
+// component1() → gets the current value (selectedOption)
+// component2() → returns a function to set the value (onOptionSelected)
+
+//So we are doing this when we destructure args
+val state = remember { mutableStateOf("text1") }
+val selectedOption = state.value
+val onOptionSelected = { newValue: String -> state.value = newValue }
+```
 
 ### Q88. How Saver works in Compose?
 

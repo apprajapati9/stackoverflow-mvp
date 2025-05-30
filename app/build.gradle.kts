@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.junit5.plugin)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -69,4 +70,10 @@ dependencies {
     // comes with testing functionality that we need to test.
 
     implementation(libs.google.code.gson)
+
+    //Compose related dependencies
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.navigation.compose)
+
 }

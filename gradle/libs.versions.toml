@@ -1,6 +1,6 @@
 [versions]
 agp = "8.10.0"
-kotlin = "2.1.0"
+kotlin = "2.1.21"
 coreKtx = "1.16.0"
 appcompat = "1.7.0"
 material = "1.12.0"
@@ -9,6 +9,8 @@ retrofit-gson-converter = "2.11.0"
 retrofit-logging-interceptor = "4.12.0"
 leakCanary = "2.14"
 gson = "2.11.0"
+composeBom = "2025.05.00"
+composeRuntime = "1.8.1"
 
 ktx-coroutines = "1.10.2"
 lifecycle = "2.9.0"
@@ -44,8 +46,14 @@ app-cash-turbine = { group = "app.cash.turbine", name = "turbine", version.ref =
 com-google-truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 org-jetbrains-kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "composeRuntime" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "lifecycle" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 #jnit5 test plugin
 junit5-plugin = { id = "de.mannodermaus.android-junit5", version.ref = "junit5-plugin" }
+#compose compiler plugin
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
