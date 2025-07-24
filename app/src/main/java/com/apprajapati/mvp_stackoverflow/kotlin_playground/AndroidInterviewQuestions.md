@@ -2,8 +2,6 @@ package com.apprajapati.mvp_stackoverflow.kotlin_playground
 
 # Android interview questions
 
-## Android lifecycle
-
 ### Q.1 Describe the activity lifecycle and what is activity?
 
 An Activity represents a single screen with a user interface and the lifecycle defines the various
@@ -22,14 +20,14 @@ during its lifetime, from creation to destruction.
     onResume() - the activity is in the foreground and user can interact with it. This is
     where you resume any paused UI updates, animations or input listeners. 
 
-    onPause() 0 This is called when the activity is partially obscured by another activity
+    onPause() - This is called when the activity is partially obscured by another activity
     (e.g dialog). The activity is still visible but not in focus. Used to pause operations
     like animations, sensor updates or saving data. 
 
-    onStop - the activity is no longer visible to the user. You should release resources
+    onStop() - the activity is no longer visible to the user. You should release resources
     that are not needed while activity is stopped such as background tasks or heavy objects.
 
-    ondestroy - This is called before the activity is fully destroyed and removed from memory. 
+    ondestroy() - This is called before the activity is fully destroyed and removed from memory. 
 
     onRestart() - if the activity is stopped and then restarted (e.g the user navigates 
     back to it), this method is called before onstart(). 
@@ -117,8 +115,7 @@ Data limitations -> only for primitive types and simple, small objects such as S
     - ViewModels don't survive system-init process death. To reload data after that,
       use `SavedStateHandle` API. Alternatively if data is related to the UI and doesn't need to be
       held in the ViewModel, then use `onSaveInstanceState()` in the View system
-      or `rememberSaveable`
-      in jetpack compose.
+      or `rememberSaveable` in jetpack compose.
 
 - Use Saved instance state as backup to handle system init process death
     - The process of saving and restoring instances happen on Main Thread, so if long running
@@ -348,7 +345,7 @@ The key difference between two architectures is that in MVVM, the ViewModel is r
 user actions and updating the state of the View. In MVI, the intent is a separate layer that
 represents user actions, making it easier to reason about app behavior and handle edge cases.
 
-By adapting VMI, you can create a more reactive, predictable and testable app while reducing
+By adapting MVI, you can create a more reactive, predictable and testable app while reducing
 coupling between layers and improving overall maintainability of your codebase.MVI allows you to
 model user interactions as intents.
 
@@ -783,8 +780,9 @@ HotFlow
   video being played.
 - You can use `stateIn` and `shareIn` to convert cold flow `flow{}` to hot flow.
 
-Flow builders : flow and callbackFlow
-Cold and hot flows: sharedIn , stateFlow and ShareFlow
+Flow builders : flow and callbackFlow Cold
+and
+hot flows: sharedIn , stateFlow and ShareFlow
 
 ```kotlin
 
@@ -896,7 +894,9 @@ StateFlow
 - Doesn't emit consecutive repeated values, it emits value only when it is distinct from the
   previous one.
 - Similar to liveData except for the lifecycle awareness. We must use `repeatOnLifecycle` scope with
-  Stateflow to add lifecycle awareness to it, then it will become exactly like livedata.
+  Stateflow to add lifecycle awareness to it, then it will become exactly like livedata. We can also
+  use stateIn and emit only when subscribed `SharingStarted.WhileSubscribed()`, to make it like
+  LiveData.
 - In Android, `StateFlow` is a great fit for classes that need to maintain an observable mutable
   state
 - Unlike a cold flow built using the `flow` builder, a `StateFlow` is hot: collecting from the flow
@@ -2141,6 +2141,8 @@ interface ConnectivityObserver {
 [Codelab](https://developer.android.com/codelabs/basic-android-kotlin-compose-workmanager#3)
 [When to use service vs Work Manager](https://medium.com/@appdevinsights/when-to-use-service-and-when-to-use-workmanager-9760613ce5c2)
 
+[Impl](https://www.youtube.com/watch?v=p79pfjDpkyQ)
+
 ### Q61. How Kotlin delegation works?
 
 Checkout `DelegatedProperty.kt` for an example in this project.
@@ -2205,6 +2207,21 @@ Text(
             focusRequester.requestFocus()
         }
     ```
+
+Semantics block allows you to : Describe what UI element is and what it does, Modify or override
+default accessibility behavior, Expose custom properties for screen readers, UI tests and
+accessibility services.
+
+You can declare following the inside semantics{}
+
+- contentDescription = text read by talkBack, similar to alt text
+- role - declares the semantics role ( eg, button, Switch)
+- stateDescription - announces state (eg. on off or selected)
+- onClick, onLongClick - custom accessibility actions
+- heading() - makes a text as a section heading
+- disabled() - indicates an element is not interactive
+- customActions - define custom gestures or actions
+- mergeDescendants = true = merges children semantics into parent
 
 ### Q65. Unit testing in Jetpack Compose?
 
@@ -2811,6 +2828,27 @@ fun WordCounter(text: String) {
     Text("Word count: $wordCount")
 }
 
+```
+
+[DerivedStateOf vs remember(key)](https://youtube.com/watch?v=_bb0PVBe3eQ)
+
+```kotlin
+//Using derivedStateOf
+val showScrollTopButton by remember { //Important distinction , type is State<Boolean>
+    derivedStateOf {
+        stateOfLazyList.firstVisibleItemIndex >= 5
+    }
+}
+
+//using remember with key
+val showScrollTopButton by remember(key1 = stateOfLazyList.firstVisibleItemIndex) { //type is Boolean
+    stateOfLazyList.firstVisibleItemIndex >= 5
+}
+
+/*
+Both approaches work but remember with key causes more recompositions that are unnecessary, to prevent such unnecessary recompositions, one should use derivedStateOf
+
+ */
 ```
 
 NOTE - Always use derivedStateOf with remember to ensure the derived state persists across
@@ -3557,9 +3595,264 @@ val onOptionSelected = { newValue: String -> state.value = newValue }
 
 ### Q88. How Saver works in Compose?
 
-### How would you pass an intent from one app to another app?
+### Q89. What does runBlocking do?
 
-### Q What is Mutex and what is the use case of that?
+It allows us to run a new coroutine and blocks the current thread until its completion. It is
+designed to bridge regular blocking code to libraries that are written in suspending style, to be
+used in main function and it tests.
+
+### Q90. Explain DiffUtil?
+
+### Q91. Explain DataStore and encryption with it?
+
+### Q92. Best practices and libraries to test coroutines?
+
+- standardTestdispatcher is needed to mention what dispatcher to use
+- instantTaskexecutionrule()
+- mockito.when(this method).thenReturn(whateverSuccess)
+- dispatcher.schedule.advanceuntilIdle()
+- Run test method as well
+
+```kotlin
+Interface DispatcherProvider {
+    Val main : CoroutineDispatcher
+            Val io :...
+    Val Default :..
+}
+
+//implementation
+Object StandardDispatcherProvider : DispatcherProvider {
+    Override
+    val main: CoroutineDispatcher
+    get() = Dispatchers.Main – real.
+}
+
+//For test cases, you can now return test dispatcher from providing diff implementation
+
+Class TestDisProvider (
+val testdispatcher: TestDi) : DispatcherProvider{
+    Main : CoroutineDispatcher
+    get() = testdispatcher
+}
+This allows us to test code properly with same dispatcher and have control of what dispatcher to pass .
+
+```
+
+### Q93. Drag and Drop in Compose/XML and Notifications in Android?
+
+### Q94. Repository Pattern in Android?
+
+It refers to an architectural approach that abstract the data layer, separating the data access
+logic from the business logic of an application. This pattern is particularly beneficial for Android
+development as it promotes clean architecture, testability and maintainability.
+
+It's purpose is to provide clean API for data access to the rest of the application. It acts as a
+mediator between the domain layer (business logic - platform independent and framework agnostic) and
+data mapping layers (database, network, etc). its used in Android mainly with clean architecture and
+MVVM pattern, It abstracts the logic for accessing data sources (e.g., database, network, cache) so
+that the rest of the app doesn't need to know where or how the data is fetched or saved.
+
+Imagine an app that fetches user profiles. The profiles can be retrieved from a local database or a
+remote server. By implementing the repository pattern, the app can seamlessly switch between the
+local and remote data sources without affecting the business logic.
+
+How it fits in Clean MVVM arch
+UI (Activity/Fragment)
+↓
+ViewModel
+↓
+UseCase ←——————— Business logic
+↓
+Repository (Interface in Domain, Impl in Data)
+↓
+Data Sources (e.g., Room, Retrofit, Cache)
+
+1. separation of concerns : Decouples the business logic from data access layers
+2. abstraction: hides the details of data source implementations
+3. testability: makes unit testing easier due to abstraction
+4. maintainability : simplifies changing or adding data sources.
+
+Domain layer:
+
+1. it's platform independent and framework agnostic
+2. contains business logic
+3. defines UseCases (also called interactors)
+4. depends only on entities and repository interfaces ( not impl)
+
+Rules of UseCases
+
+- A UseCase encapsulates a single unit of business logic
+- it coordinates between repositories and applies rules
+- it doesn't know anything about Android sdk, viewmodel or UI . ie. platform agnostic
+
+Why Separate RemoteDataSource/LocalDataSource interface and impl - an extra layer after Repository?
+
+=> It offers separation of concerns
+
+- UserApi - knows how to make network calls
+- UserRemoteDataSourceImpl knows how to handle Api Response transforms DTOs to domain models and
+  possibly add error handling or retry logic
+- UserRepositoryImpl doesn't care if the data is from network or DB - just coordinates sources
+  This keeps each layer clean and focused.
+
+=> Offers abtraction and replaceability
+
+- Later might want to switch from Retrofit to Ktor, GraphQL or even firebase
+- With a clean UserRemoteDataSource interface, only the impl changes - not the repository or
+  upstream use cases
+  without this, we would need to change many files just to change HTTP library
+
+=> Improved testability
+
+- We can easily mock interface of remoteDatasource easily in repository unit tests.
+- if you inject UserApi directly, you would either need a real HTTP response or tightly coupled
+  mocking (not ideal of course!)
+
+=> Easier Error handling and Mapping
+
+- if you need to map errors from multiple endpoints or handle tokens/auth logic centrally, doing it
+  in the data source keeps that logic out of the repository
+
+```kotlin
+override suspend fun getUser(id: String): User {
+    try {
+        val dto = userApi.getUser(id)
+        return dto.toDomain()
+    } catch (e: HTTPException) {
+        e.printStackTrace()
+        //throw exception with message
+    }
+}
+//Also important to note that it is not ideal to separate remote data source from repo if app contains only 1-2 Apis, not expected to grow much or just experimental
+```
+
+[Repository Pattern](https://medium.com/@dugguRK/the-real-repository-pattern-in-android-refers-to-an-architectural-approach-that-abstracts-the-fd4f4cc573c3)
+[Repository Pattern](https://medium.com/swlh/repository-pattern-in-android-c31d0268118c)
+
+In information systems design and theory, single source of truth (SSOT) is the practice of
+structuring information models and associated data schema such that every data element is mastered (
+or edited) in only one place.
+
+In essence, the Repository design pattern facilitates de-coupling of the business logic and the data
+access layers in your application with the former not having to have any knowledge on how data
+persistence would actually take place.
+
+“Repository will mediates between the domain and data mapping layers using a collection-like
+interface for accessing domain objects.”
+
+“Use a Repository to separate the logic that retrieves the data and maps it to the entity model from
+the business logic that acts on the model. The business logic should be agnostic to the type of data
+that comprises the data source layer. For example, the data source layer can be a database, a
+SharePoint list, or a Web service.”
+
+### Q95. What is clean architecture?
+
+Clean architecture is a way of structuring an Android app into clearly defined layers to separate
+concerns, improve testability and make the codebase more maintainable over time. The typical
+structure includes three main layers: Presentation, Domain and Data
+The presentation layer handles UI logic and user interactions, in Compose, this might involve
+ViewModels and state management. The domain layer sits at the core and contains the business
+logic, = it is completely independent and framework agnostic. This is where I define uses cases and
+core models. Finally the data layer handles data access - like API calls, database operations or
+shared prefs and it implements interfaces defined in the domain layer
+
+Each layer only communicates with the layer directly adjacent to it and dependencies point inward,
+toward the domain layer. This separation allows us to swap out frameworks or implementations, test
+business logic without touching the UI and allows us to easily maintain the codebase. I have applied
+Clean Arch in several projects including my personal projects and it is especially useful when
+working with larger teams or apps that evolve quickly.
+
+Presentation Layer (ViewModel, UI)
+↑
+Domain Layer (UseCases, Interfaces for Repositories)
+↑
+Data Layer (Implementations of Repositories, APIs, DB)
+
+### Q96. What is BackHandler in compose and what other useful libraries are there in Compose?
+
+[Good read of Documentation on Good libraries on Compose](https://developer.android.com/develop/ui/compose/libraries)
+
+BackHandler - composable that allows us
+
+1. prevent back navigation when a confirmation dialog is open
+2. dismiss modals or custom UI components manually.
+3. prevent accidental app exits
+4. Override back button behavior for specific screens.
+
+BackHandler only works when the Composable is in the composition tree
+you can enable or disable it dynamically using enabled parameter
+internally it uses the OnBackPressedDispatcher system from the activity.
+
+### Q97. How would you pass an intent from one app to another app?
+
+### Q98. How to make composable clean, testable and maintainable?
+
+1. Keep composable pure functions of state, avoid side effects inside composable like showing a
+   toast, navigation
+2. Use params, state and event callbacks from a higher level composable and avoid passing ViewModel
+3. Avoid business logic inside UI composable
+4. Use Unidirectional data flow. Data should flow down from Viewmodel to UI. Events should flow up
+   from UI to viewmodel
+5. Use state hoisting. Extract state to the parent and let child composables reflect that state and
+   raise events
+6. Make composables small and focused
+7. Use Ui state models using sealed or data class
+
+### Q99. What is Mutex and what is the use case of that?
+
+### Q100. Architecture and Compose useful considerations?
+
+Great read on documentation
+[Good read of Documentation on Good libraries on Compose](https://developer.android.com/develop/ui/compose/libraries)
+
+[Architecture recommendations](https://developer.android.com/topic/architecture/recommendations)
+
+[Migration guide for compose](https://developer.android.com/develop/ui/compose/migrate/other-considerations)
+
+### Q101. Optimizing LazyList lag when scrolling in Compose?
+
+1. Optimize image loading - One of the most common cause for sluggish scrolling in lazy column is
+   the use of unoptimized images. To ensure a smooth user experience, prioritize using images that
+   are specifically optimized for fast loading and rendering
+2. Use of `rememberImagePainter` coil's function simplifies image loading within LazyList items. it
+   leverages compose's recomposition system by intelligently remembering the image loading state
+   across recompositions. This means if UI state changes ( causing a recomposition ), the image
+   loading process is optimized. If the image is already cached, it won't be reloaded unnecessarily,
+   preventing performance hiccups.
+3. Using a unique key in items - it plays a critical role in optimizing performance within
+   LazyColumn. when changes occur in the product list (e.g adding, removing or updating items),
+   compose uses the key to identity which items have changed. If the key of an item remains the
+   same, and its content hasn't changed significantly, compose can reuse existing composable for
+   that item instead of recreating it from scratch. This reduces unnecessary recompositions and
+   improves the overall experience by providing smoother scrolling and updates in the list.
+4. Using immutable objects - object whose state cannot be changed once it's created. This concept is
+   particularly useful in functional programming paradigms like compose where immutability can
+   significantly enhance performance and reduce likelihood of unexpected side effects. Immutable
+   objects are inherently thread safe, eliminating the need for explicit synchronization. You can
+   also use @immutable and @stable annotation and use object.copy(name = ) to update val properties.
+
+### Q102. Animation in Android?
+
+[5 Quick animations to make your compose stand out](https://www.youtube.com/watch?v=0mfCbXrYBPE)
+[Blog](https://blog.realogs.in/animating-jetpack-compose-ui/)
+[Blog - AGSL](https://blog.realogs.in/composing-pixels/)
+[Animated Counter](https://www.youtube.com/watch?v=07ZdBCyh7sc)
+
+### Q102. ?
+
+[Blog](https://proandroiddev.com/pagination-in-jetpack-compose-with-and-without-paging-3-e45473a352f4)
+
+### Q103. pagination and paging3 in Android?
+
+[Blog](https://proandroiddev.com/pagination-in-jetpack-compose-with-and-without-paging-3-e45473a352f4)
+
+### Q104. pagination and paging3 in Android?
+
+[Blog](https://proandroiddev.com/pagination-in-jetpack-compose-with-and-without-paging-3-e45473a352f4)
+
+### Q105. pagination and paging3 in Android?
+
+[Blog](https://proandroiddev.com/pagination-in-jetpack-compose-with-and-without-paging-3-e45473a352f4)
 
 ### Q Passing viewmodel for jetpack screen/ composable function
 
