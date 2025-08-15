@@ -19,7 +19,7 @@ class StackImpl<T : Any> : Stack<T> {
     }
 
     override fun push(element: T) {
-        println("Element -> $element")
+        //println("Element -> $element")
         stack.add(element)
     }
 
@@ -38,6 +38,32 @@ fun printStack(stackList: ArrayList<Char>) {
     println("Printing..ends.")
 }
 
+
+fun String.validParenMore(): Boolean {
+
+    val parentsPair: Map<Char, Char> = mapOf(
+        ')' to '(',
+        '}' to '{',
+        ']' to '[',
+    )
+
+    val stack = StackImpl<Char>()
+
+    for (char in this) {
+
+        if (parentsPair.contains(char)) {
+            if (stack.isEmpty.not() && stack.peek() == parentsPair[char]) {
+                stack.pop()
+            } else
+                return false
+        } else
+            stack.push(char)
+    }
+
+    return stack.isEmpty
+}
+
+
 fun String.validParen(): Boolean {
     val stack = StackImpl<Char>()
 
@@ -46,7 +72,7 @@ fun String.validParen(): Boolean {
         when (char) {
             '(' -> {
                 stack.push(char)
-                printStack(stack.stack)
+                //printStack(stack.stack)
             }
 
             ')' -> {
@@ -56,15 +82,15 @@ fun String.validParen(): Boolean {
                 } else
                     stack.pop()
 
-                printStack(stack.stack)
+                //printStack(stack.stack)
             }
 
             else -> {
-                println("Else")
+                // println("Else")
             }
         }
     }
-    println("Size of stack -> ${stack.count}")
+    // println("Size of stack -> ${stack.count}")
     return stack.isEmpty
 }
 
@@ -72,5 +98,10 @@ fun main() {
 
     val name = "((aj)a(y)"
 
+    val name2 = "[(])"
+    val name3 = "[()]"
+
     println(name.validParen())
+    println(name2.validParenMore())
+    println(name3.validParenMore())
 }

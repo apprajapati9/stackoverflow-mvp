@@ -4,7 +4,6 @@ fun twoSum(numbers: IntArray, target: Int): IntArray { //O(n)
     val map = HashMap<Int, Int>()
 
     numbers.forEachIndexed { index, number ->
-        //println("$number and $index")
         map[target - number]?.let {
             return intArrayOf(it, index)
         }

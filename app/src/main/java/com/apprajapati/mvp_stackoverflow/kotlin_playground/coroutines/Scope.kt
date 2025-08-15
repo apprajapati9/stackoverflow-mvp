@@ -32,6 +32,7 @@ suspend fun scopeTest() {
         delay(100L)
         println("C")
     }
+    
     println("D")
 }
 

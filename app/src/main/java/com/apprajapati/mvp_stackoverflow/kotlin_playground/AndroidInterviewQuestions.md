@@ -830,6 +830,7 @@ SharedFlow and StateFlow : Which one to choose ? (Both are hot flows)
 
 Resource playlist [Flow basics](https://youtube.com/watch?v=ZX8VsqNO_Ss)
 When to use what? [Hot flow vs Cold flow](https://youtube.com/watch?v=M8YtV47kaqA)
+Good read on Flow [Flow Medium](https://medium.com/@supunsulak20/flows-in-koltin-3ad40aa89e0a)
 
 ### Q29. What if we don't want to collect stream of data when UI is not visible?
 
@@ -3838,19 +3839,175 @@ Great read on documentation
 [Blog - AGSL](https://blog.realogs.in/composing-pixels/)
 [Animated Counter](https://www.youtube.com/watch?v=07ZdBCyh7sc)
 
-### Q102. ?
+### Q102. pagination and paging3 in Android?
 
 [Blog](https://proandroiddev.com/pagination-in-jetpack-compose-with-and-without-paging-3-e45473a352f4)
+Also check out RedditCats app that was built for this demonstration.
 
-### Q103. pagination and paging3 in Android?
+### Q103. What is compose BOM?
 
-[Blog](https://proandroiddev.com/pagination-in-jetpack-compose-with-and-without-paging-3-e45473a352f4)
+It is a special gradle dependency management feature that lets you manage all jetpack compose
+library version in one place instead of specifying them individually for every dependency.
 
-### Q104. pagination and paging3 in Android?
+In general, the Compose BOM manages core Compose groups, including (but not necessarily limited to):
 
-[Blog](https://proandroiddev.com/pagination-in-jetpack-compose-with-and-without-paging-3-e45473a352f4)
+- androidx.compose.animation:animation
+- androidx.compose.animation:animation-core, animation-graphics, etc.
+- androidx.compose.foundation:foundation, foundation-layout
+- androidx.compose.material:material, material-ripple, etc.
+- androidx.compose.material3 (including adaptive components)
+  -androidx.compose.ui:ui, plus various modules like ui-graphics, ui-tooling, ui-tooling-preview,
+  ui-test, ui-test-junit4, ui-unit, ui-viewbinding, ui-text, etc.
 
-### Q105. pagination and paging3 in Android?
+### Q104. What is KSP?
+
+KSP is a general-purpose code generation tool for Kotlin, and Hilt is just one library that uses it.
+
+KSP itself doesn’t know anything about Hilt, Room, Moshi, etc. It’s just a framework that lets
+library authors (like the Hilt team) write processors that: Read your code’s structure (classes,
+functions, annotations, types, etc.). Generate new Kotlin/Java source files based on that info
+
+In Hilt’s case
+When you use Hilt with KSP, the Hilt compiler (which is a KSP processor) looks for:
+
+@HiltAndroidApp, @AndroidEntryPoint , @HiltViewModel , @Inject, @Provides, etc.
+
+Then it generates the boilerplate you’d normally have to write by hand:
+
+Component interfaces for DI, ViewModel factories , The dependency graph, Injection code for
+Activities, Fragments, etc.
+
+KSP exists to make annotation/code generation faster, more Kotlin-aware, and more future-proof.
+It doesn’t change what Hilt (or Room, or Moshi, or any other processor) does — it just changes how
+the processing is done.
+
+If you encounter PROCESSING_ERROR -> it means you have failed to use appropriate plugin that tells
+ksp to generate appropriate code for that particular library or plugin. I.E if you don't add hilt
+plugin and only add ksp plugin, then ksp will not know how to generate code when using annotation
+like @HiltAndroidApp or @AndroidEntryPoint
+
+impl needs hilt-android
+ksp needs hilt-compiler to generate code.
+
+OR it could be @Inject constructor() needed when passing dependency without @Inject
+
+### Q105. Things to remember when working with OutlinedTextField?
+
+- Password transformation - visualTransformation = PasswordVisualTransformation()
+- label - for the hint/title of the edittext
+- To go next OutlinedTextField() use
+
+```kotlin
+ keyboardOptions = KeyboardOptions(
+    keyboardType = KeyboardType.Email,
+    imeAction = ImeAction.Next //Compose has a focus chain internally (based on the order of focusable components in the layout), you can handle focus using KeyboardActions.onNext {}, without that, it could unreliable but compose focus chain how layout is displayed might make it work.
+)
+
+//For Done
+keyboardOptions = KeyboardOptions(
+    keyboardType = KeyboardType.Password,
+    imeAction = ImeAction.Done
+)
+keyboardActions = KeyboardActions(
+    onDone = {
+        signupButtonFocus.requestFocus() //On DONE, it will go to focus on button.
+    }
+)
+
+//After done, if you want to focus on particular element then declare focus requester
+val signupButtonFocus = remember {
+    FocusRequester()
+} //For a particular composable - here it's button
+
+//now that button must have focusable and focusRequester modifier
+Button(
+    modifier = Modifier
+        .padding(8.dp)
+        .focusRequester(signupButtonFocus).focusable(), onClick = {}) {
+    Text("Signup")
+}
+
+```
+
+- To show Snack bar you need
+
+```kotlin
+    state = remember { SnackbarHostState() }
+scope = rememberCoroutineScope()
+
+SnackbarHost(hostState = state)
+```
+
+### Q105. Test compose deeplinks?
+
+```bash 
+#command - 
+adb shell am start -a android.intent.action.VIEW \ -d "http://com.example.typesafecomposenavigation/recipe" com.example.typesafecomposenavigation
+
+#result 
+Starting: Intent { act=android.intent.action.VIEW dat=http://com.example.typesafecomposenavigation/... pkg=com.example.typesafecomposenavigation }
+
+#command
+$ adb shell am start -a android.intent.action.VIEW \ -d "http://com.example.typesafecomposenavigation/recipe/12" com.example.typesafecomposenavigation
+
+#result
+Starting: Intent { act=android.intent.action.VIEW dat=http://com.example.typesafecomposenavigation/... pkg=com.example.typesafecomposenavigation 
+```
+
+### Q105. When to use BoxWithConstraints?
+
+It behaves like a box but with an added feature : it exposes the constraints of it's parent (like
+max/minWidth, max/minHeight) This makes it ideal for creating responsive layouts.
+It is used to
+
+- create responsive designs that adapt to screen size
+- when you need to adjust child composables based on the parent's dimensions
+- for building dynamic layouts where behavior depends on the available space.
+- it is specially useful when targeting phones, tablets and foldables.
+-
+
+Example use case:
+
+- Small screen → Stack elements vertically.
+- Large screen → Place elements side by side.
+
+### Q105. Navigation in Compose - how SavedStateHandle helps with navigation?
+
+[Excellent read on Compose navigation](https://medium.com/@anna972606/navigation-in-jetpack-compose-p1-28b457b97e4b)
+[managing state in compose navigation](https://proandroiddev.com/managing-state-across-navigation-in-jetpack-compose-7ff5a9f49864)
+[All about navigation 2 Compose](https://medium.com/@naresh.k.objects/best-practices-with-jetpack-compose-navigation-aa15b11f4c1d)
+[Dos and don'ts of compose](https://blog.savvas.cloud/2023/09/07/the-dos-and-donts-of-jetpack-compose)
+
+[Diff approaches explained](https://medium.com/@muhamed.riyas/passing-data-between-screens-in-jetpack-compose-a-comprehensive-guide-76f9af967843)
+
+VIDEOS
+[Multiple back stacks in Navigation](https://www.youtube.com/watch?v=fp1-YSmdzh8)
+[Sharing data between screens in Compose navigation](https://www.youtube.com/watch?v=h61Wqy3qcKg)
+
+### Q105. Data and domain layer and repository pattern?
+
+The repository layer is the appropriate place to map data received from an API (often in the form of
+DTO) to your application's internal domain models. It acts as a mediator between domain and data
+layer.
+
+Repository acts as a single source of truth for data. It encapsulates the logic for retrieving data
+from various sources (like network APIs or local databases) and transforming it into a consistent
+format that the rest of the application can consume without needing to know the origin or raw
+structure of the data
+
+Flexibility and testability - by centralizing mapping in the Repository, you can easily switch data
+sources (network to local) without affecting domain or presentation layers. This also makes testing
+easier, as you can mock the Repository and its mapping logic independently.
+Domain layer should ideally be independent of external data structures. Mapping API DTOs to domain
+models within the repository ensures that your core business logic and entities in the Domain layer
+remain clean and unburdened by details of the data's origin or format.
+
+In summary, Api response (DTOs) are received in the data layer. The repository in the Data layer
+handles the mapping of these DTOs into your application's domain models. The Domain layer consumes
+these domain models, which are then potentially further transformed into UI specific models in the
+Presentation layer.
+
+### Q105. pagination and paging3 in Android?### Q105. pagination and paging3 in Android?
 
 [Blog](https://proandroiddev.com/pagination-in-jetpack-compose-with-and-without-paging-3-e45473a352f4)
 
